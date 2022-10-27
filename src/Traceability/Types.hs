@@ -5,7 +5,7 @@
 {-# LANGUAGE ScopedTypeVariables        #-}
 {-# LANGUAGE TemplateHaskell            #-}
 
-module Traceabilty.Types 
+module Traceability.Types 
 (
      MintPolicyRedeemer(..)
    , LCMintPolicyParams(..)

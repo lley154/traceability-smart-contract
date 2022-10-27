@@ -8,7 +8,7 @@
 
 
 
-module Traceabilty.OffChain    
+module Traceability.OffChain    
     (   
         initEndpoint
     ,   InitSchema
@@ -17,8 +17,8 @@ module Traceabilty.OffChain
     ,   TokenParams (..)
     ) where
 
-import           Traceabilty.OnChain                 (intToBBS, lcCurSymbol, lcHash, lcPolicy, LCDatum(..), lcValidator, minAda, nftCurSymbol, nftPolicy, nftTokenValue, threadTokenCurSymbol, threadTokenPolicy, threadTokenValue, typedLCValidator)
-import           Traceabilty.Types                   (LCMintPolicyParams(..), LCRedeemer(..), LCValidatorParams(..), NFTMintPolicyParams(..), MintPolicyRedeemer(..), ThreadTokenRedeemer(..))
+import           Traceability.OnChain                 (intToBBS, lcCurSymbol, lcHash, lcPolicy, LCDatum(..), lcValidator, minAda, nftCurSymbol, nftPolicy, nftTokenValue, threadTokenCurSymbol, threadTokenPolicy, threadTokenValue, typedLCValidator)
+import           Traceability.Types                   (LCMintPolicyParams(..), LCRedeemer(..), LCValidatorParams(..), NFTMintPolicyParams(..), MintPolicyRedeemer(..), ThreadTokenRedeemer(..))
 import           Control.Lens                       (review)
 import           Control.Monad                      (forever)
 import           Data.Aeson                         (FromJSON, ToJSON)
