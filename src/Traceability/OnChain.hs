@@ -16,11 +16,13 @@ module Traceability.OnChain
     , nftCurSymbol
     , nftPolicy
     , nftTokenValue
+    , typedLockTokenValidator
+    , lockTokenValidator
     ) where
 
 import           Data.Aeson                         (FromJSON, ToJSON)
 import           GHC.Generics                       (Generic)
-import           Traceability.Types                 (NFTMintPolicyParams(..), MintPolicyRedeemer(..))
+import           Traceability.Types                 (LockTokenValParams(..), NFTMintPolicyParams(..), MintPolicyRedeemer(..))
 import           Ledger                             (mkMintingPolicyScript, ScriptContext(..), scriptCurrencySymbol, 
                                                      TxInfo(..),  txSignedBy, TxId(getTxId ))
 import qualified Ledger.Ada as Ada                  (lovelaceValueOf)
@@ -34,7 +36,7 @@ import qualified Ledger.Typed.Scripts as TScripts   (MintingPolicy, TypedValidat
 import qualified Ledger.Value as Value              (CurrencySymbol, flattenValue, singleton, TokenName(..), Value)
 import           Plutus.V1.Ledger.Api as Ledger     (unsafeFromBuiltinData, unValidatorScript)
 import qualified PlutusTx                           (applyCode, compile, fromBuiltinData, liftCode, makeIsDataIndexed, makeLift)
-import           PlutusTx.Prelude                   (Bool(..), BuiltinByteString, BuiltinData, check, consByteString, divide, emptyByteString, find, Integer, Maybe(..), negate, otherwise, snd, sha2_256, traceIfFalse, traceError, (&&), (==), ($), (<=), (>=), (<>), (<$>), (-), (*), (+))
+import           PlutusTx.Prelude                   (Bool(..), BuiltinByteString, BuiltinData, check, consByteString, divide, emptyByteString, error, find, Integer, Maybe(..), negate, otherwise, snd, sha2_256, traceIfFalse, traceError, (&&), (==), ($), (<=), (>=), (<>), (<$>), (-), (*), (+))
 import qualified Prelude as Haskell                 (Show)
 
 ------------------------------------------------------------------------
@@ -104,3 +106,49 @@ nftCurSymbol mpParams = scriptCurrencySymbol $ nftPolicy mpParams
 nftTokenValue :: Value.CurrencySymbol -> Value.TokenName -> Value.Value
 nftTokenValue cs' tn' = Value.singleton cs' tn' 1
 
+
+-- | Always Fail validator to lock order token
+{-# INLINABLE mkLockTokenValidator #-}
+mkLockTokenValidator :: LockTokenValParams -> BuiltinData -> BuiltinData -> BuiltinData -> Bool
+mkLockTokenValidator _ _ _ _ = False
+
+--validator :: Plutus.Validator
+--validator = Plutus.mkValidatorScript $$(PlutusTx.compile [|| mkValidator ||])
+
+
+-- | Creating a wrapper around littercoin validator for 
+--   performance improvements by not using a typed validator
+{-# INLINABLE wrapLockTokenValidator #-}
+wrapLockTokenValidator :: BuiltinData -> BuiltinData -> BuiltinData -> BuiltinData -> ()
+wrapLockTokenValidator params dat red ctx =
+   check $ mkLockTokenValidator (unsafeFromBuiltinData params) (unsafeFromBuiltinData dat) (unsafeFromBuiltinData red) (unsafeFromBuiltinData ctx)
+
+
+untypedLockTokenValidator :: BuiltinData -> Scripts.Validator
+untypedLockTokenValidator params = Scripts.mkValidatorScript $
+    $$(PlutusTx.compile [|| wrapLockTokenValidator ||])
+    `PlutusTx.applyCode`
+    PlutusTx.liftCode params
+    
+
+-- | We need a typedValidator for offchain mkTxConstraints, so 
+-- created it using the untyped validator
+typedLockTokenValidator :: BuiltinData -> TScripts.TypedValidator TypeUtils.Any
+typedLockTokenValidator params =
+  Validators.unsafeMkTypedValidator $ untypedLockTokenValidator params
+
+
+mkLockTokenScript :: BuiltinData -> Scripts.Script
+mkLockTokenScript params = unValidatorScript $ untypedLockTokenValidator params
+
+
+lockTokenValidator :: BuiltinData -> Scripts.Validator
+lockTokenValidator params = TScripts.validatorScript $ typedLockTokenValidator params
+
+
+lockTokenValHash :: BuiltinData -> Scripts.ValidatorHash
+lockTokenValHash params = TScripts.validatorHash $ typedLockTokenValidator params
+
+
+--untypedHash :: BuiltinData -> Scripts.ValidatorHash
+--untypedHash params = Scripts.validatorHash $ untypedValidator params

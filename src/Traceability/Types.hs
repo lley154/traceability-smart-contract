@@ -9,6 +9,7 @@ module Traceability.Types
 (
      MintPolicyRedeemer(..)
    , NFTMintPolicyParams(..)
+   , LockTokenValParams(..)
 
 )where
 
@@ -46,3 +47,13 @@ data NFTMintPolicyParams = NFTMintPolicyParams
 
 PlutusTx.makeIsDataIndexed ''NFTMintPolicyParams [('NFTMintPolicyParams,0)] 
 PlutusTx.makeLift ''NFTMintPolicyParams
+
+-- | ValParams is used to pass the admin pkh, NFT & Littercoin token names as a parameter to the 
+--   littercoin validator script
+data LockTokenValParams = LockTokenValParams
+    {   
+      ltvOrderId                 :: !Integer
+    } deriving Haskell.Show
+
+PlutusTx.makeIsDataIndexed ''LockTokenValParams [('LockTokenValParams,0)] 
+PlutusTx.makeLift ''LockTokenValParams

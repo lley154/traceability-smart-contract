@@ -13,8 +13,8 @@ module Traceability.OffChain
     ,   TokenParams (..)
     ) where
 
-import           Traceability.OnChain               (intToBBS, nftCurSymbol, nftPolicy, nftTokenValue)
-import           Traceability.Types                 (NFTMintPolicyParams(..), MintPolicyRedeemer(..))
+import           Traceability.OnChain               (intToBBS, nftCurSymbol, nftPolicy, nftTokenValue, typedLockTokenValidator, lockTokenValidator)
+import           Traceability.Types                 (LockTokenValParams(..), NFTMintPolicyParams(..), MintPolicyRedeemer(..))
 import           Control.Lens                       (review)
 import           Control.Monad                      (forever)
 import           Data.Aeson                         (FromJSON, ToJSON)
@@ -68,23 +68,11 @@ mintNFTToken orderId tp = do
         oref : _ -> do
             let orderIdHash = sha2_256 $ intToBBS orderId
                 tn = Value.TokenName $ orderIdHash
-                --orderIdAddress = scriptHashAddress vHash 
-                --(_, nftVal) = Value.split(nftTokenValue nftCurSymbol tn)
                 milkCost = 100000000 :: Integer
                 merchSplit = milkCost * (tpSplit tp)
                 donorSplit = milkCost * (100 - (tpSplit tp))
                 merchAmount = divide merchSplit 100 :: Integer
                 donorAmount = divide donorSplit 100 :: Integer
- 
-                orderIdHashHex = encodeHex orderIdHash  -- returns BuiltinString
-                orderIdHashHexString = T.unpack $ fromBuiltin orderIdHashHex -- returns String
-                orderIdHashHextByteString = strToBS orderIdHashHexString -- returns ByteString
-   
-                orderPk = PubKeyHash $ toBuiltin orderIdHashHextByteString  -- need BuiltinByteString
-                orderPkh = PaymentPubKeyHash orderPk
-                orderAddress = Address.pubKeyHashAddress orderPkh Nothing
-                ownAddress = Address.pubKeyHashAddress ownPkh Nothing 
-
                 red = Scripts.Redeemer $ toBuiltinData $ MintPolicyRedeemer 
                      {
                         mpPolarity = True  -- mint token
@@ -97,28 +85,27 @@ mintNFTToken orderId tp = do
                     ,   nftMerchantPkh = tpMerchantPkh tp
                     ,   nftDonorPkh = tpDonorPkh tp
                     }
-                dat = Datum $ toBuiltinData ()
-
-            Contract.logInfo @Haskell.String $ printf "orderIdHash %s" (Haskell.show orderIdHash)
-            Contract.logInfo @Haskell.String $ printf "orderIdHashHex %s" (Haskell.show orderIdHashHex)
-            Contract.logInfo @Haskell.String $ printf "orderPkh %s" (Haskell.show orderPkh)
-            Contract.logInfo @Haskell.String $ printf "ownPkh %s" (Haskell.show ownPkh)
-            Contract.logInfo @Haskell.String $ printf "orderAddress %s" (Haskell.show orderAddress)
-            Contract.logInfo @Haskell.String $ printf "ownAddress %s" (Haskell.show ownAddress)
-
+                vParams = LockTokenValParams
+                    {   
+                        ltvOrderId = orderId
+                    }
+                dat = PlutusTx.toBuiltinData ()
+  
             let nftVal  = Value.singleton (nftCurSymbol mintParams) tn 1
-                lookups = Constraints.mintingPolicy (nftPolicy mintParams) Haskell.<> 
+                lookups = Constraints.typedValidatorLookups (typedLockTokenValidator $ PlutusTx.toBuiltinData vParams) Haskell.<> 
+                          Constraints.otherScript (lockTokenValidator $ PlutusTx.toBuiltinData vParams) Haskell.<> 
+                          Constraints.mintingPolicy (nftPolicy mintParams) Haskell.<> 
                           Constraints.unspentOutputs utxos
-                tx      = Constraints.mustMintValueWithRedeemer red nftVal Haskell.<> 
+                tx      = Constraints.mustPayToTheScript dat nftVal Haskell.<> 
+                          Constraints.mustMintValueWithRedeemer red nftVal Haskell.<> 
                           Constraints.mustPayToPubKey (tpMerchantPkh tp) (Ada.lovelaceValueOf merchAmount) Haskell.<> 
                           Constraints.mustPayToPubKey (tpDonorPkh tp) (Ada.lovelaceValueOf donorAmount) Haskell.<> 
-                          Constraints.mustPayToPubKey (orderPkh) nftVal Haskell.<> 
                           Constraints.mustSpendPubKeyOutput oref
-            ledgerTx <- Contract.submitTxConstraintsWith @Void lookups tx
-            void $ Contract.awaitTxConfirmed $ getCardanoTxId ledgerTx
-            Contract.logInfo @Haskell.String $ printf "mintNFT: Forged %s" (Haskell.show nftVal)
-            Contract.logInfo @Haskell.String $ printf "mintNFT: Token params %s" (Haskell.show mintParams)
 
+            utx <- Contract.mapError (review Contract._ConstraintResolutionContractError) (Request.mkTxContract lookups tx)
+            let adjustedUtx = Constraints.adjustUnbalancedTx utx
+            Request.submitTxConfirmed adjustedUtx
+            Contract.logInfo $ "mintNFT: tx submitted successfully= " ++ Haskell.show adjustedUtx
 
 
 -- | TokenSchema type is defined and used by the PAB Contracts
@@ -131,51 +118,3 @@ useEndpoint = forever
               $ Contract.endpoint @"mintNFT" $ \(id, tp) -> mintNFTToken id tp
 
 
--- | Slow digit-by-digit hex to string converter
-intToHexString :: Integer -> BuiltinString
-intToHexString i
-  | i < zero = "-" <> (go . abs $ i)
-  | i == zero = "0"
-  | otherwise = go i
-  where
-    go :: Integer -> BuiltinString
-    go arg =
-      let (q, r) = arg `quotRem` 16
-       in if q == zero
-            then hexDigitToString r
-            else intToHexString q <> hexDigitToString r
-
--- | We render bytestrings as their individual code points
-encodeHex :: BuiltinByteString -> BuiltinString
-encodeHex bbs =
-  let len = lengthOfByteString bbs
-   in if len == zero
-        then ""
-        else
-          let byte = indexByteString bbs zero
-           in "" <> intToHexString byte <> (encodeHex . sliceByteString 1 (len - 1) $ bbs)
-
-
--- | This is unsafe, but only ever called internally.
-hexDigitToString :: Integer -> BuiltinString
-hexDigitToString i
-  | i == 0 = "0"
-  | i == 1 = "1"
-  | i == 2 = "2"
-  | i == 3 = "3"
-  | i == 4 = "4"
-  | i == 5 = "5"
-  | i == 6 = "6"
-  | i == 7 = "7"
-  | i == 8 = "8"
-  | i == 9 = "9"
-  | i == 10 = "a" 
-  | i == 11 = "b" 
-  | i == 12 = "c" 
-  | i == 13 = "d"
-  | i == 14 = "e"
-  | otherwise = "f"
-
-
-strToBS :: Haskell.String -> BS.ByteString
-strToBS = C.pack 
