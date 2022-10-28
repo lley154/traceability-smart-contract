@@ -38,10 +38,10 @@ PlutusTx.makeLift ''MintPolicyRedeemer
 --   into the minting poicy which will make the NFT policy unique
 data NFTMintPolicyParams = NFTMintPolicyParams
     { 
-      nftVersion                     :: !Integer  
-    , nftSplit                       :: !Integer
-    , nftMerchantAddress             :: !Address.Address
-    , nftDonorAddress                :: !Address.Address
+      nftVersion                 :: !Integer  
+    , nftSplit                   :: !Integer
+    , nftMerchantPkh             :: !Address.PaymentPubKeyHash
+    , nftDonorPkh                :: !Address.PaymentPubKeyHash
     } deriving Haskell.Show
 
 PlutusTx.makeIsDataIndexed ''NFTMintPolicyParams [('NFTMintPolicyParams,0)] 
