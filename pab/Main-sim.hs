@@ -16,6 +16,7 @@ import           PabContract                            (Contracts(..))
 import           Plutus.PAB.Effects.Contract.Builtin    (Builtin, BuiltinHandler(contractHandler), handleBuiltin)
 import qualified Plutus.PAB.Simulator as Simulator
 import qualified Plutus.PAB.Webserver.Server as PAB.Server
+import           PlutusTx.Prelude                       (BuiltinByteString)
 import           Wallet.Emulator.Wallet                 (knownWallet)
 
 merchantPkh :: PaymentPubKeyHash
@@ -61,9 +62,9 @@ main = void $ Simulator.runSimulationWith handlers $ do
      
     let rp1 = RedeemerParams
             {
-              rpPolarity = True                     -- Mint     
-            , rpOrderId = 123 :: Integer            -- Order Id
-            , rpAdaAmount = 100000000 :: Integer    -- 100 Ada
+              rpPolarity = True                         -- Mint     
+            , rpOrderId = "123" :: BuiltinByteString    -- Order Id
+            , rpAdaAmount = 100000000 :: Integer        -- 100 Ada
             , rpSplit = 95 :: Integer
             , rpMerchantPkh = merchantPkh
             , rpDonorPkh = donorPkh
@@ -83,9 +84,9 @@ main = void $ Simulator.runSimulationWith handlers $ do
 
     let rp2 = RedeemerParams
             {
-              rpPolarity = True                     -- Mint     
-            , rpOrderId = 124 :: Integer            -- Order Id
-            , rpAdaAmount = 100000000 :: Integer    -- 100 Ada
+              rpPolarity = True                         -- Mint     
+            , rpOrderId = "124" :: BuiltinByteString    -- Order Id
+            , rpAdaAmount = 100000000 :: Integer        -- 100 Ada
             , rpSplit = 95 :: Integer
             , rpMerchantPkh = merchantPkh
             , rpDonorPkh = donorPkh
@@ -104,9 +105,9 @@ main = void $ Simulator.runSimulationWith handlers $ do
 
     let rp3 = RedeemerParams
             {
-              rpPolarity = True                     -- Mint     
-            , rpOrderId = 125 :: Integer            -- Order Id
-            , rpAdaAmount = 100000000 :: Integer    -- 100 Ada
+              rpPolarity = True                         -- Mint     
+            , rpOrderId = "125" :: BuiltinByteString    -- Order Id
+            , rpAdaAmount = 100000000 :: Integer        -- 100 Ada
             , rpSplit = 95 :: Integer
             , rpMerchantPkh = merchantPkh
             , rpDonorPkh = donorPkh
@@ -134,7 +135,7 @@ main = void $ Simulator.runSimulationWith handlers $ do
     let rp4 = RedeemerParams
             {
               rpPolarity = True                        -- Mint     
-            , rpOrderId = 126 :: Integer               -- Order Id
+            , rpOrderId = "126" :: BuiltinByteString   -- Order Id
             , rpAdaAmount = 100000000 :: Integer       -- 100 Ada
             , rpSplit = 100 :: Integer
             , rpMerchantPkh = merchantPkh
@@ -165,7 +166,7 @@ main = void $ Simulator.runSimulationWith handlers $ do
     let rp5 = RedeemerParams
             {
               rpPolarity = True                        -- Mint     
-            , rpOrderId = 127 :: Integer               -- Order Id
+            , rpOrderId = "127" :: BuiltinByteString   -- Order Id
             , rpAdaAmount = 100000000 :: Integer       -- 100 Ada
             , rpSplit = 95 :: Integer
             , rpMerchantPkh = fraudPkh
@@ -196,7 +197,7 @@ main = void $ Simulator.runSimulationWith handlers $ do
     let rp6 = RedeemerParams
             {
               rpPolarity = True                        -- Mint     
-            , rpOrderId = 128 :: Integer               -- Order Id
+            , rpOrderId = "128" :: BuiltinByteString   -- Order Id
             , rpAdaAmount = 100000000 :: Integer       -- 100 Ada
             , rpSplit = 95 :: Integer
             , rpMerchantPkh = merchantPkh

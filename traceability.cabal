@@ -79,6 +79,7 @@ executable traceability-pab
     data-default -any,
     plutus-contract -any,
     plutus-pab -any,
+    plutus-tx -any,
     traceability -any,
     aeson -any,
     freer-simple -any,

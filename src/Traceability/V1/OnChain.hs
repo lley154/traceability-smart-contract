@@ -11,8 +11,7 @@
 
 module Traceability.V1.OnChain 
     (
-      intToBBS
-    , minAda
+      minAda
     , nftCurSymbol
     , nftPolicy
     , nftTokenValue
@@ -35,9 +34,9 @@ import qualified Ledger.Typed.Scripts as TScripts   (MintingPolicy, TypedValidat
 import qualified Ledger.Value as Value              (CurrencySymbol, flattenValue, singleton, TokenName(..), Value)
 import           Plutus.V1.Ledger.Api as Ledger     (unsafeFromBuiltinData)
 import qualified PlutusTx                           (applyCode, compile, liftCode)
-import           PlutusTx.Prelude                   (Bool(..), BuiltinByteString, BuiltinData, check, consByteString, 
-                                                     divide, emptyByteString, Integer, Maybe(..), otherwise, sha2_256, 
-                                                     traceIfFalse, (&&), (==), ($), (-), (*), (+))
+import           PlutusTx.Prelude                   (Bool(..), BuiltinData, check,  
+                                                     divide, Integer, Maybe(..), otherwise, sha2_256, 
+                                                     traceIfFalse, (&&), (==), ($), (-), (*))
 
 ------------------------------------------------------------------------
 -- On Chain Code
@@ -46,12 +45,6 @@ import           PlutusTx.Prelude                   (Bool(..), BuiltinByteString
 {-# INLINABLE minAda #-}
 minAda :: Value.Value
 minAda = Ada.lovelaceValueOf 2000000
-
-
--- | Create a BuitinByteString from an Integer
-{-# INLINEABLE intToBBS #-}
-intToBBS :: Integer -> BuiltinByteString
-intToBBS y = consByteString (y + 48) emptyByteString -- 48 is ASCII code for '0'
 
                             
 -- | Check that the value is locked at an address for the provided outputs
@@ -81,7 +74,7 @@ mkNFTPolicy params (MintPolicyRedeemer polarity orderId adaAmount) ctx =
     info = scriptContextTxInfo ctx  
 
     tn :: Value.TokenName
-    tn = Value.TokenName $ sha2_256 $ intToBBS orderId
+    tn = Value.TokenName $ sha2_256 orderId
 
     split :: Integer
     split = nftSplit params
