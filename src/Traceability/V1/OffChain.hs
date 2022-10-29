@@ -14,7 +14,7 @@ module Traceability.V1.OffChain
     ,   RedeemerParams (..)
     ) where
 
-import           Traceability.V1.OnChain            (intToBBS, nftCurSymbol, nftPolicy, typedLockTokenValidator, 
+import           Traceability.V1.OnChain            (nftCurSymbol, nftPolicy, typedLockTokenValidator, 
                                                      lockTokenValidator)
 import           Traceability.V1.Types              (LockTokenValParams(..), NFTMintPolicyParams(..), MintPolicyRedeemer(..))
 import           Control.Lens                       (review)
@@ -37,7 +37,7 @@ import qualified Plutus.Contract as Contract        (AsContractError (_Constrain
                                                      logInfo, mapError, utxosAt)
 import           Plutus.Contract.Request as Request (mkTxContract, submitTxConfirmed, ownPaymentPubKeyHash)
 import           PlutusTx                           (toBuiltinData)
-import           PlutusTx.Prelude                   (Bool(..), Integer, Maybe (..), ($), divide, 
+import           PlutusTx.Prelude                   (Bool(..), BuiltinByteString, Integer, Maybe (..), ($), divide, 
                                                      sha2_256, (-), (++), (*))
 import qualified Prelude as Haskell                 (Semigroup ((<>)), Show (..), String)
 
@@ -55,7 +55,7 @@ data TokenParams = TokenParams
 data RedeemerParams = RedeemerParams
     { 
       rpPolarity                  :: !Bool    -- True = Mint, False = Burn
-    , rpOrderId                   :: !Integer -- The order number
+    , rpOrderId                   :: !BuiltinByteString -- The order number
     , rpAdaAmount                 :: !Integer -- The total amount of the order
     , rpSplit                     :: !Integer -- used for testing 
     , rpMerchantPkh               :: !Address.PaymentPubKeyHash -- used for testing 
@@ -73,7 +73,7 @@ mintNFTToken rp tp = do
     case Map.keys utxos of
         []       -> Contract.logError @Haskell.String "mintToken: No utxo found"
         oref : _ -> do
-            let orderIdHash = sha2_256 $ intToBBS $ rpOrderId rp
+            let orderIdHash = sha2_256 $ rpOrderId rp
                 tn = Value.TokenName $ orderIdHash
                 merchSplit = (rpAdaAmount rp) * (rpSplit rp)
                 donorSplit = (rpAdaAmount rp) * (100 - (tpSplit tp))

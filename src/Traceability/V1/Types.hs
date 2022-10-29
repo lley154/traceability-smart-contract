@@ -15,16 +15,16 @@ module Traceability.V1.Types
 
 import qualified    Ledger.Address as Address           (PaymentPubKeyHash(..))
 import qualified    PlutusTx                            (makeIsDataIndexed, makeLift)
-import              PlutusTx.Prelude                    (Bool(..), Integer)
+import              PlutusTx.Prelude                    (Bool(..), BuiltinByteString, Integer)
 import qualified    Prelude as Haskell                  (Show)
 
 
 -- | The mint policy reeemder indicates if the token is to be minted or burned
 data MintPolicyRedeemer = MintPolicyRedeemer
     { 
-      mpPolarity                  :: !Bool    -- True = Mint, False = Burn
-    , mpOrderId                   :: !Integer -- The order number
-    , mpAdaAmount                 :: !Integer -- The total amount of the order 
+      mpPolarity                  :: !Bool              -- True = Mint, False = Burn
+    , mpOrderId                   :: !BuiltinByteString -- The order number
+    , mpAdaAmount                 :: !Integer           -- The total amount of the order 
     } deriving Haskell.Show
 
 PlutusTx.makeIsDataIndexed ''MintPolicyRedeemer [('MintPolicyRedeemer,0)] 
@@ -48,7 +48,7 @@ PlutusTx.makeLift ''NFTMintPolicyParams
 --   littercoin validator script
 data LockTokenValParams = LockTokenValParams
     {   
-      ltvOrderId                 :: !Integer
+      ltvOrderId                 :: !BuiltinByteString
     } deriving Haskell.Show
 
 PlutusTx.makeIsDataIndexed ''LockTokenValParams [('LockTokenValParams,0)] 
