@@ -82,8 +82,8 @@ mintNFTToken rp tp = do
                 tn = Value.TokenName $ orderIdHash
                 merchSplit = (rpAdaAmount rp) * (rpSplit rp)
                 donorSplit = (rpAdaAmount rp) * (100 - (tpSplit tp))
-                merchAmount = divide merchSplit 100 :: Integer
-                donorAmount = divide donorSplit 100 :: Integer
+                merchAmount = divide merchSplit 100
+                donorAmount = divide donorSplit 100
                 red = Scripts.Redeemer $ toBuiltinData $ MintPolicyRedeemer 
                      {
                         mpPolarity = True  -- mint token

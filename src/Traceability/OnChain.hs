@@ -8,6 +8,7 @@
 {-# LANGUAGE ScopedTypeVariables    #-}
 {-# LANGUAGE TemplateHaskell        #-}
 {-# LANGUAGE TypeApplications       #-}
+--{-# LANGUAGE TypeOperators          #-}
 
 module Traceability.OnChain 
     (
@@ -26,7 +27,7 @@ import           Traceability.Types                 (LockTokenValParams(..), NFT
 import           Ledger                             (mkMintingPolicyScript, ScriptContext(..), scriptCurrencySymbol, 
                                                      TxInfo(..),  txSignedBy, TxId(getTxId ))
 import qualified Ledger.Ada as Ada                  (lovelaceValueOf)
-import qualified Ledger.Address as Address          (Address, PaymentPubKeyHash(..))
+import qualified Ledger.Address as Address          (Address, PaymentPubKeyHash(..), pubKeyHashAddress)
 import qualified Ledger.Contexts as Contexts        (getContinuingOutputs, ownCurrencySymbol, scriptCurrencySymbol, spendsOutput, TxOut)
 import qualified Ledger.Scripts as Scripts          (Datum(..), DatumHash, mkMintingPolicyScript, mkValidatorScript, Script, Validator, ValidatorHash, validatorHash)                                                  
 import qualified Ledger.Tx as Tx                    (TxOut(..), TxOutRef(..))
@@ -53,14 +54,15 @@ intToBBS :: Integer -> BuiltinByteString
 intToBBS y = consByteString (y + 48) emptyByteString -- 48 is ASCII code for '0'
 
 
--- | Check that the NFT value is in the provided outputs
+                            
+-- | Check that the value is locked at an address for the provided outputs
 {-# INLINABLE validOutputs #-}
-validOutputs :: Value.Value -> [Contexts.TxOut] -> Bool
-validOutputs _ [] = False
-validOutputs txVal (x:xs)
-    | Tx.txOutValue x == txVal = True
-    | otherwise = validOutputs txVal xs
-                             
+validOutputs :: Address.Address -> Value.Value -> [Contexts.TxOut] -> Bool
+validOutputs _ _ [] = False
+validOutputs scriptAddr txVal (x:xs)
+    | (Tx.txOutAddress x == scriptAddr) && (Tx.txOutValue x == txVal) = True
+    | otherwise = validOutputs scriptAddr txVal xs
+
 
 -- | mkNFTPolicy is the minting policy is for creating the order token NFT when
 --   an order is submitted.
@@ -69,7 +71,9 @@ mkNFTPolicy :: NFTMintPolicyParams -> MintPolicyRedeemer -> ScriptContext -> Boo
 mkNFTPolicy params (MintPolicyRedeemer polarity orderId adaAmount) ctx = 
 
     case polarity of
-        True ->    traceIfFalse "NFTP1" checkMintedAmount 
+        True ->    traceIfFalse "NFTP1" checkMintedAmount
+                && traceIfFalse "NFTP2" checkMerchantOutput 
+                && traceIfFalse "NFTP3" checkDonorOutput 
                 
         False ->   False   -- no burning allowed
 
@@ -80,12 +84,39 @@ mkNFTPolicy params (MintPolicyRedeemer polarity orderId adaAmount) ctx =
     tn :: Value.TokenName
     tn = Value.TokenName $ sha2_256 $ intToBBS orderId
 
+    split :: Integer
+    split = nftSplit params
+
+    merchantAddress :: Address.Address
+    merchantAddress = Address.pubKeyHashAddress (nftMerchantPkh params) Nothing
+
+    merchantAmount :: Value.Value
+    merchantAmount = Ada.lovelaceValueOf (divide (adaAmount * split) 100)
+
+    donorAddress :: Address.Address
+    donorAddress = Address.pubKeyHashAddress (nftDonorPkh params) Nothing
+
+    donorAmount :: Value.Value
+    donorAmount = Ada.lovelaceValueOf (divide (adaAmount * (100 - split)) 100)
+
+
     -- Check that there is only 1 token minted
     checkMintedAmount :: Bool
     checkMintedAmount = case Value.flattenValue (txInfoMint info) of
         [(_, tn', amt)] -> tn' == tn && amt == 1
         _               -> False
           
+    -- | Check that both the split amount value is correct and at the correct
+    --   address for the merchant     
+    checkMerchantOutput :: Bool
+    checkMerchantOutput = validOutputs merchantAddress merchantAmount (txInfoOutputs info)
+
+    -- | Check that both the split amount value is correct and at the correct
+    --   address for the donor  
+    checkDonorOutput :: Bool
+    checkDonorOutput = validOutputs donorAddress donorAmount (txInfoOutputs info)
+
+
 
 -- | Wrap the minting policy using the boilerplate template haskell code
 nftPolicy :: NFTMintPolicyParams -> TScripts.MintingPolicy

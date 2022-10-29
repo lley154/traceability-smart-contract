@@ -71,7 +71,7 @@ main = void $ Simulator.runSimulationWith handlers $ do
             , rpMerchantPkh = merchantPkh
             , rpDonorPkh = donorPkh
             }
-
+    Simulator.logString @(Builtin Contracts) "-----------------------------------------------------------------------"
     Simulator.logString @(Builtin Contracts) "Test Case #1, mint multiple tokens at different address for each order number with correct split"
     Simulator.logString @(Builtin Contracts) "Test Case #1, Order #123"
     Simulator.logString @(Builtin Contracts) $ show tp
@@ -124,8 +124,8 @@ main = void $ Simulator.runSimulationWith handlers $ do
 
     Simulator.waitNSlots 5    
 
-    balances_nft <- Simulator.currentBalances
-    Simulator.logBalances @(Builtin Contracts) balances_nft
+    balances_nft1 <- Simulator.currentBalances
+    Simulator.logBalances @(Builtin Contracts) balances_nft1
 
 
     ------------------------------------------------------------------------------------------------------
@@ -136,14 +136,15 @@ main = void $ Simulator.runSimulationWith handlers $ do
 
     let rp4 = RedeemerParams
             {
-              rpPolarity = True        -- Mint     
-            , rpOrderId = 123 :: Integer               -- Order Id
+              rpPolarity = True                        -- Mint     
+            , rpOrderId = 126 :: Integer               -- Order Id
             , rpAdaAmount = 100000000 :: Integer       -- 100 Ada
             , rpSplit = 100 :: Integer
             , rpMerchantPkh = merchantPkh
             , rpDonorPkh = donorPkh
             }
 
+    Simulator.logString @(Builtin Contracts) "-----------------------------------------------------------------------"
     Simulator.logString @(Builtin Contracts) "Test Case #2, mint order token with incorrect split"
     Simulator.logString @(Builtin Contracts) $ show tp
     Simulator.logString @(Builtin Contracts) $ show rp4
@@ -154,8 +155,8 @@ main = void $ Simulator.runSimulationWith handlers $ do
 
     Simulator.waitNSlots 5    
 
-    balances_nft <- Simulator.currentBalances
-    Simulator.logBalances @(Builtin Contracts) balances_nft
+    balances_nft2 <- Simulator.currentBalances
+    Simulator.logBalances @(Builtin Contracts) balances_nft2
 
 
     ------------------------------------------------------------------------------------------------------
@@ -166,14 +167,15 @@ main = void $ Simulator.runSimulationWith handlers $ do
 
     let rp5 = RedeemerParams
             {
-              rpPolarity = True        -- Mint     
-            , rpOrderId = 123 :: Integer               -- Order Id
+              rpPolarity = True                        -- Mint     
+            , rpOrderId = 126 :: Integer               -- Order Id
             , rpAdaAmount = 100000000 :: Integer       -- 100 Ada
-            , rpSplit = 100 :: Integer
+            , rpSplit = 95 :: Integer
             , rpMerchantPkh = fraudPkh
             , rpDonorPkh = donorPkh
             }
 
+    Simulator.logString @(Builtin Contracts) "-----------------------------------------------------------------------"
     Simulator.logString @(Builtin Contracts) "Test Case #3, send funds to incorrect merchant wallet"
     Simulator.logString @(Builtin Contracts) $ show tp
     Simulator.logString @(Builtin Contracts) $ show rp5
@@ -184,8 +186,8 @@ main = void $ Simulator.runSimulationWith handlers $ do
 
     Simulator.waitNSlots 5    
 
-    balances_nft <- Simulator.currentBalances
-    Simulator.logBalances @(Builtin Contracts) balances_nft
+    balances_nft3 <- Simulator.currentBalances
+    Simulator.logBalances @(Builtin Contracts) balances_nft3
 
 
     ------------------------------------------------------------------------------------------------------
@@ -196,14 +198,15 @@ main = void $ Simulator.runSimulationWith handlers $ do
 
     let rp6 = RedeemerParams
             {
-              rpPolarity = True        -- Mint     
-            , rpOrderId = 123 :: Integer               -- Order Id
+              rpPolarity = True                        -- Mint     
+            , rpOrderId = 126 :: Integer               -- Order Id
             , rpAdaAmount = 100000000 :: Integer       -- 100 Ada
-            , rpSplit = 100 :: Integer
+            , rpSplit = 95 :: Integer
             , rpMerchantPkh = merchantPkh
             , rpDonorPkh = fraudPkh
             }
 
+    Simulator.logString @(Builtin Contracts) "-----------------------------------------------------------------------"
     Simulator.logString @(Builtin Contracts) "Test Case #4, send funds to incorrect donor wallet"
     Simulator.logString @(Builtin Contracts) $ show tp
     Simulator.logString @(Builtin Contracts) $ show rp6
@@ -214,9 +217,8 @@ main = void $ Simulator.runSimulationWith handlers $ do
 
     Simulator.waitNSlots 5    
 
-    balances_nft <- Simulator.currentBalances
-    Simulator.logBalances @(Builtin Contracts) balances_nft
-
+    balances_nft4 <- Simulator.currentBalances
+    Simulator.logBalances @(Builtin Contracts) balances_nft4
 
     shutdown
 
