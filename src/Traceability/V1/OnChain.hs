@@ -116,7 +116,6 @@ mkNFTPolicy params (MintPolicyRedeemer polarity orderId adaAmount) ctx =
     checkDonorOutput = validOutputs donorAddress donorAmount (txInfoOutputs info)
 
 
-
 -- | Wrap the minting policy using the boilerplate template haskell code
 nftPolicy :: NFTMintPolicyParams -> TScripts.MintingPolicy
 nftPolicy mpParams = mkMintingPolicyScript $
@@ -165,13 +164,7 @@ typedLockTokenValidator params =
   Validators.unsafeMkTypedValidator $ untypedLockTokenValidator params
 
 
---mkLockTokenScript :: BuiltinData -> Scripts.Script
---mkLockTokenScript params = unValidatorScript $ untypedLockTokenValidator params
-
-
 lockTokenValidator :: BuiltinData -> Scripts.Validator
 lockTokenValidator params = TScripts.validatorScript $ typedLockTokenValidator params
 
 
---lockTokenValHash :: BuiltinData -> Scripts.ValidatorHash
---lockTokenValHash params = TScripts.validatorHash $ typedLockTokenValidator params
