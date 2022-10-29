@@ -66,7 +66,7 @@ validOutputs txVal (x:xs)
 --   an order is submitted.
 {-# INLINABLE mkNFTPolicy #-}
 mkNFTPolicy :: NFTMintPolicyParams -> MintPolicyRedeemer -> ScriptContext -> Bool
-mkNFTPolicy params (MintPolicyRedeemer polarity orderId) ctx = 
+mkNFTPolicy params (MintPolicyRedeemer polarity orderId adaAmount) ctx = 
 
     case polarity of
         True ->    traceIfFalse "NFTP1" checkMintedAmount 

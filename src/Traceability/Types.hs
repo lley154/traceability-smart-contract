@@ -28,7 +28,8 @@ import qualified    Prelude as Haskell                  (Show)
 data MintPolicyRedeemer = MintPolicyRedeemer
     { 
       mpPolarity                  :: !Bool    -- True = Mint, False = Burn
-    , mpOrderId                   :: !Integer -- The order number 
+    , mpOrderId                   :: !Integer -- The order number
+    , mpAdaAmount                 :: !Integer -- The total amount of the order 
     } deriving Haskell.Show
 
 PlutusTx.makeIsDataIndexed ''MintPolicyRedeemer [('MintPolicyRedeemer,0)] 

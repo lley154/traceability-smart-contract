@@ -11,6 +11,7 @@ module Traceability.OffChain
         TokenSchema
     ,   useEndpoint
     ,   TokenParams (..)
+    ,   RedeemerParams (..)
     ) where
 
 import           Traceability.OnChain               (intToBBS, nftCurSymbol, nftPolicy, nftTokenValue, typedLockTokenValidator, lockTokenValidator)
@@ -56,27 +57,38 @@ data TokenParams = TokenParams
     } deriving (Haskell.Show, Generic, FromJSON, ToJSON, Playground.ToSchema)
 
 
+data RedeemerParams = RedeemerParams
+    { 
+      rpPolarity                  :: !Bool    -- True = Mint, False = Burn
+    , rpOrderId                   :: !Integer -- The order number
+    , rpAdaAmount                 :: !Integer -- The total amount of the order
+    , rpSplit                     :: !Integer -- used for testing 
+    , rpMerchantPkh               :: !Address.PaymentPubKeyHash -- used for testing 
+    , rpDonorPkh                  :: !Address.PaymentPubKeyHash -- used for testing 
+    } deriving (Haskell.Show, Generic, FromJSON, ToJSON, Playground.ToSchema)
+
+
 -- | mintNFT mints the order token.   This offchain function is only used by the PAB
 --   simulator to test the validation rules of the minting policy validator. 
-mintNFTToken :: Integer -> TokenParams -> Contract.Contract () TokenSchema T.Text ()
-mintNFTToken orderId tp = do
+mintNFTToken :: RedeemerParams -> TokenParams -> Contract.Contract () TokenSchema T.Text ()
+mintNFTToken rp tp = do
      
     ownPkh <- Request.ownPaymentPubKeyHash
     utxos <- Contract.utxosAt (Address.pubKeyHashAddress ownPkh Nothing)
     case Map.keys utxos of
         []       -> Contract.logError @Haskell.String "mintToken: No utxo found"
         oref : _ -> do
-            let orderIdHash = sha2_256 $ intToBBS orderId
+            let orderIdHash = sha2_256 $ intToBBS $ rpOrderId rp
                 tn = Value.TokenName $ orderIdHash
-                milkCost = 100000000 :: Integer
-                merchSplit = milkCost * (tpSplit tp)
-                donorSplit = milkCost * (100 - (tpSplit tp))
+                merchSplit = (rpAdaAmount rp) * (rpSplit rp)
+                donorSplit = (rpAdaAmount rp) * (100 - (tpSplit tp))
                 merchAmount = divide merchSplit 100 :: Integer
                 donorAmount = divide donorSplit 100 :: Integer
                 red = Scripts.Redeemer $ toBuiltinData $ MintPolicyRedeemer 
                      {
                         mpPolarity = True  -- mint token
-                     ,  mpOrderId = orderId 
+                     ,  mpOrderId = rpOrderId rp
+                     ,  mpAdaAmount = rpAdaAmount rp
                      }
                 mintParams = NFTMintPolicyParams 
                     {
@@ -87,7 +99,7 @@ mintNFTToken orderId tp = do
                     }
                 vParams = LockTokenValParams
                     {   
-                        ltvOrderId = orderId
+                        ltvOrderId = rpOrderId rp
                     }
                 dat = PlutusTx.toBuiltinData ()
   
@@ -98,8 +110,8 @@ mintNFTToken orderId tp = do
                           Constraints.unspentOutputs utxos
                 tx      = Constraints.mustPayToTheScript dat nftVal Haskell.<> 
                           Constraints.mustMintValueWithRedeemer red nftVal Haskell.<> 
-                          Constraints.mustPayToPubKey (tpMerchantPkh tp) (Ada.lovelaceValueOf merchAmount) Haskell.<> 
-                          Constraints.mustPayToPubKey (tpDonorPkh tp) (Ada.lovelaceValueOf donorAmount) Haskell.<> 
+                          Constraints.mustPayToPubKey (rpMerchantPkh rp) (Ada.lovelaceValueOf merchAmount) Haskell.<> 
+                          Constraints.mustPayToPubKey (rpDonorPkh rp) (Ada.lovelaceValueOf donorAmount) Haskell.<> 
                           Constraints.mustSpendPubKeyOutput oref
 
             utx <- Contract.mapError (review Contract._ConstraintResolutionContractError) (Request.mkTxContract lookups tx)
@@ -109,12 +121,12 @@ mintNFTToken orderId tp = do
 
 
 -- | TokenSchema type is defined and used by the PAB Contracts
-type TokenSchema = Contract.Endpoint "mintNFT" (Integer, TokenParams)
+type TokenSchema = Contract.Endpoint "mintNFT" (RedeemerParams, TokenParams)
 
 useEndpoint :: Contract.Contract () TokenSchema T.Text ()
 useEndpoint = forever
               $ Contract.handleError Contract.logError
               $ Contract.awaitPromise
-              $ Contract.endpoint @"mintNFT" $ \(id, tp) -> mintNFTToken id tp
+              $ Contract.endpoint @"mintNFT" $ \(rp, tp) -> mintNFTToken rp tp
 
 
