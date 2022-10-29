@@ -8,7 +8,7 @@ module PabContract(
     Contracts(..)
     ) where
 
-import           Traceability.OffChain
+import           Traceability.V1.OffChain
 import           Data.Aeson                          (FromJSON (..), ToJSON (..))                                                      
 import qualified Data.OpenApi                        as OpenApi
 import           GHC.Generics                        (Generic)

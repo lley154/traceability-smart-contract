@@ -41,9 +41,9 @@ common lang
 library
     import: lang
     exposed-modules:
-      Traceability.Types
-      Traceability.OnChain
-      Traceability.OffChain
+      Traceability.V1.Types
+      Traceability.V1.OnChain
+      Traceability.V1.OffChain
       --traceability.Deploy
     build-depends:
       base >= 4.9 && < 5,

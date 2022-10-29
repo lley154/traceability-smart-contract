@@ -8,9 +8,8 @@
 {-# LANGUAGE ScopedTypeVariables    #-}
 {-# LANGUAGE TemplateHaskell        #-}
 {-# LANGUAGE TypeApplications       #-}
---{-# LANGUAGE TypeOperators          #-}
 
-module Traceability.OnChain 
+module Traceability.V1.OnChain 
     (
       intToBBS
     , minAda
@@ -21,24 +20,24 @@ module Traceability.OnChain
     , lockTokenValidator
     ) where
 
-import           Data.Aeson                         (FromJSON, ToJSON)
-import           GHC.Generics                       (Generic)
-import           Traceability.Types                 (LockTokenValParams(..), NFTMintPolicyParams(..), MintPolicyRedeemer(..))
+import           Traceability.V1.Types              (LockTokenValParams(..), NFTMintPolicyParams(..), 
+                                                     MintPolicyRedeemer(..))
 import           Ledger                             (mkMintingPolicyScript, ScriptContext(..), scriptCurrencySymbol, 
-                                                     TxInfo(..),  txSignedBy, TxId(getTxId ))
+                                                     TxInfo(..))
 import qualified Ledger.Ada as Ada                  (lovelaceValueOf)
-import qualified Ledger.Address as Address          (Address, PaymentPubKeyHash(..), pubKeyHashAddress)
-import qualified Ledger.Contexts as Contexts        (getContinuingOutputs, ownCurrencySymbol, scriptCurrencySymbol, spendsOutput, TxOut)
-import qualified Ledger.Scripts as Scripts          (Datum(..), DatumHash, mkMintingPolicyScript, mkValidatorScript, Script, Validator, ValidatorHash, validatorHash)                                                  
-import qualified Ledger.Tx as Tx                    (TxOut(..), TxOutRef(..))
+import qualified Ledger.Address as Address          (Address, pubKeyHashAddress)
+import qualified Ledger.Scripts as Scripts          (mkValidatorScript, Validator)                                                  
+import qualified Ledger.Tx as Tx                    (TxOut(..))
 import qualified Ledger.Typed.Scripts.Validators as Validators (unsafeMkTypedValidator)
 import qualified Ledger.Typed.TypeUtils as TypeUtils (Any)
-import qualified Ledger.Typed.Scripts as TScripts   (MintingPolicy, TypedValidator, validatorScript, validatorHash, wrapMintingPolicy)
+import qualified Ledger.Typed.Scripts as TScripts   (MintingPolicy, TypedValidator, validatorScript, 
+                                                     wrapMintingPolicy)
 import qualified Ledger.Value as Value              (CurrencySymbol, flattenValue, singleton, TokenName(..), Value)
-import           Plutus.V1.Ledger.Api as Ledger     (unsafeFromBuiltinData, unValidatorScript)
-import qualified PlutusTx                           (applyCode, compile, fromBuiltinData, liftCode, makeIsDataIndexed, makeLift)
-import           PlutusTx.Prelude                   (Bool(..), BuiltinByteString, BuiltinData, check, consByteString, divide, emptyByteString, error, find, Integer, Maybe(..), negate, otherwise, snd, sha2_256, traceIfFalse, traceError, (&&), (==), ($), (<=), (>=), (<>), (<$>), (-), (*), (+))
-import qualified Prelude as Haskell                 (Show)
+import           Plutus.V1.Ledger.Api as Ledger     (unsafeFromBuiltinData)
+import qualified PlutusTx                           (applyCode, compile, liftCode)
+import           PlutusTx.Prelude                   (Bool(..), BuiltinByteString, BuiltinData, check, consByteString, 
+                                                     divide, emptyByteString, Integer, Maybe(..), otherwise, sha2_256, 
+                                                     traceIfFalse, (&&), (==), ($), (-), (*), (+))
 
 ------------------------------------------------------------------------
 -- On Chain Code
@@ -48,16 +47,16 @@ import qualified Prelude as Haskell                 (Show)
 minAda :: Value.Value
 minAda = Ada.lovelaceValueOf 2000000
 
+
 -- | Create a BuitinByteString from an Integer
 {-# INLINEABLE intToBBS #-}
 intToBBS :: Integer -> BuiltinByteString
 intToBBS y = consByteString (y + 48) emptyByteString -- 48 is ASCII code for '0'
 
-
                             
 -- | Check that the value is locked at an address for the provided outputs
 {-# INLINABLE validOutputs #-}
-validOutputs :: Address.Address -> Value.Value -> [Contexts.TxOut] -> Bool
+validOutputs :: Address.Address -> Value.Value -> [Tx.TxOut] -> Bool
 validOutputs _ _ [] = False
 validOutputs scriptAddr txVal (x:xs)
     | (Tx.txOutAddress x == scriptAddr) && (Tx.txOutValue x == txVal) = True
@@ -132,7 +131,7 @@ nftPolicy mpParams = mkMintingPolicyScript $
 nftCurSymbol :: NFTMintPolicyParams -> Value.CurrencySymbol
 nftCurSymbol mpParams = scriptCurrencySymbol $ nftPolicy mpParams 
 
-
+-- | Return the value of the nftToken
 {-# INLINABLE nftTokenValue #-}
 nftTokenValue :: Value.CurrencySymbol -> Value.TokenName -> Value.Value
 nftTokenValue cs' tn' = Value.singleton cs' tn' 1
@@ -142,9 +141,6 @@ nftTokenValue cs' tn' = Value.singleton cs' tn' 1
 {-# INLINABLE mkLockTokenValidator #-}
 mkLockTokenValidator :: LockTokenValParams -> BuiltinData -> BuiltinData -> BuiltinData -> Bool
 mkLockTokenValidator _ _ _ _ = False
-
---validator :: Plutus.Validator
---validator = Plutus.mkValidatorScript $$(PlutusTx.compile [|| mkValidator ||])
 
 
 -- | Creating a wrapper around littercoin validator for 
@@ -169,17 +165,13 @@ typedLockTokenValidator params =
   Validators.unsafeMkTypedValidator $ untypedLockTokenValidator params
 
 
-mkLockTokenScript :: BuiltinData -> Scripts.Script
-mkLockTokenScript params = unValidatorScript $ untypedLockTokenValidator params
+--mkLockTokenScript :: BuiltinData -> Scripts.Script
+--mkLockTokenScript params = unValidatorScript $ untypedLockTokenValidator params
 
 
 lockTokenValidator :: BuiltinData -> Scripts.Validator
 lockTokenValidator params = TScripts.validatorScript $ typedLockTokenValidator params
 
 
-lockTokenValHash :: BuiltinData -> Scripts.ValidatorHash
-lockTokenValHash params = TScripts.validatorHash $ typedLockTokenValidator params
-
-
---untypedHash :: BuiltinData -> Scripts.ValidatorHash
---untypedHash params = Scripts.validatorHash $ untypedValidator params
+--lockTokenValHash :: BuiltinData -> Scripts.ValidatorHash
+--lockTokenValHash params = TScripts.validatorHash $ typedLockTokenValidator params

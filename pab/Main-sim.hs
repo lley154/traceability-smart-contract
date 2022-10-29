@@ -5,16 +5,13 @@ module Main
     ( main
     ) where
         
-import           Traceability.OffChain       
+import           Traceability.V1.OffChain       
 import           Control.Monad                          (void)
 import           Control.Monad.Freer                    (interpret)
 import           Control.Monad.IO.Class                 (MonadIO (..))
-import           Data.Aeson                             (Result (..), fromJSON)
 import           Data.Default                           (def)
-import qualified Data.Monoid as Monoid
 import           Ledger.Address                         (PaymentPubKeyHash)
 import qualified Ledger.CardanoWallet as CW
-import           Ledger.Value as Value                  (TokenName(..))
 import           PabContract                            (Contracts(..))
 import           Plutus.PAB.Effects.Contract.Builtin    (Builtin, BuiltinHandler(contractHandler), handleBuiltin)
 import qualified Plutus.PAB.Simulator as Simulator
@@ -168,7 +165,7 @@ main = void $ Simulator.runSimulationWith handlers $ do
     let rp5 = RedeemerParams
             {
               rpPolarity = True                        -- Mint     
-            , rpOrderId = 126 :: Integer               -- Order Id
+            , rpOrderId = 127 :: Integer               -- Order Id
             , rpAdaAmount = 100000000 :: Integer       -- 100 Ada
             , rpSplit = 95 :: Integer
             , rpMerchantPkh = fraudPkh
@@ -199,7 +196,7 @@ main = void $ Simulator.runSimulationWith handlers $ do
     let rp6 = RedeemerParams
             {
               rpPolarity = True                        -- Mint     
-            , rpOrderId = 126 :: Integer               -- Order Id
+            , rpOrderId = 128 :: Integer               -- Order Id
             , rpAdaAmount = 100000000 :: Integer       -- 100 Ada
             , rpSplit = 95 :: Integer
             , rpMerchantPkh = merchantPkh
