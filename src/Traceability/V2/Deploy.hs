@@ -24,9 +24,7 @@ import           Data.Functor                         (void)
 import qualified Ledger.Address                       as Address
 import           Ledger.Value                         as Value
 import qualified Plutus.Script.Utils.V2.Scripts       as PSU.V2
---import qualified Plutus.Script.Utils.V2.Typed.Scripts as PTSU.V2
 import qualified Plutus.V2.Ledger.Api                 as PlutusV2
---import qualified Plutus.V2.Ledger.Tx                  as TxV2
 import qualified PlutusTx                             (toBuiltinData)
 import           PlutusTx.Prelude                     (BuiltinByteString, Bool(..), Either(..), 
                                                        emptyByteString , Integer, Maybe(..), return,  
