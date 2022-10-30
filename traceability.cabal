@@ -41,9 +41,10 @@ common lang
 library
     import: lang
     exposed-modules:
+      Traceability.V2.Deploy
       Traceability.V2.Types
       Traceability.V2.OnChain
-      --Traceability.V2.Deploy
+
     build-depends:
       aeson
       , base >= 4.9 && < 5
