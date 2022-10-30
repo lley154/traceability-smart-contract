@@ -51,13 +51,13 @@ amountSplit = 95   -- 95% goes to the merchant, 5% goes to the donor
 
 -- Merchant Pkh
 merchantPubKeyHashBS :: B.ByteString
-merchantPubKeyHashBS = "a766096168c31739f1b52ee287d5b27ad0f68ba76462301565406419"
+merchantPubKeyHashBS = "3d62bfdff66855d150b6cf97e4509ef78f5ea6245f642adf7629338c"
 
 -- Admin public key payment hash
 donorPubKeyHashBS :: B.ByteString
-donorPubKeyHashBS = "a766096168c31739f1b52ee287d5b27ad0f68ba76462301565406419"
+donorPubKeyHashBS = "b2b0a5ceaf7bc9a56fe619819b8891e6bafeff5c2cb275e333f97a9f"
 
-
+-- dummy order id for testing
 orderId :: BuiltinByteString
 orderId = "123"
 
