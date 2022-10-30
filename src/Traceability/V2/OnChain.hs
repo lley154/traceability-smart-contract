@@ -9,45 +9,31 @@
 {-# LANGUAGE TemplateHaskell        #-}
 {-# LANGUAGE TypeApplications       #-}
 
-module Traceability.V1.OnChain 
+module Traceability.V2.OnChain 
     (
-      minAda
-    , nftCurSymbol
+      nftCurSymbol
     , nftPolicy
     , nftTokenValue
     ) where
 
-import           Traceability.V1.Types                          (NFTMintPolicyParams(..), MintPolicyRedeemer(..))
---import           Ledger                                       (mkMintingPolicyScript, ScriptContext(..), scriptCurrencySymbol, 
---                                                              TxInfo(..))
+import           Traceability.V2.Types                          (NFTMintPolicyParams(..), MintPolicyRedeemer(..))
 import qualified Ledger.Ada as Ada                              (lovelaceValueOf)
 import qualified Ledger.Address as Address                      (Address, pubKeyHashAddress)
---import qualified Ledger.Scripts as Scripts                      (mkValidatorScript, Validator)                                                  
---import qualified Ledger.Tx as Tx                                (TxOut(..))
---import qualified Ledger.Typed.Scripts.Validators as Validators  (unsafeMkTypedValidator)
---import qualified Ledger.Typed.TypeUtils as TypeUtils            (Any)
-
-import qualified Plutus.Script.Utils.Typed as Typed             (Any)
+--import qualified Plutus.Script.Utils.Typed as Typed             (Any)
 import qualified Plutus.Script.Utils.V2.Scripts as PSU.V2       (scriptCurrencySymbol)
---import qualified Ledger.Typed.Scripts as TScripts               (MintingPolicy, wrapMintingPolicy)
+import qualified Plutus.Script.Utils.V2.Typed.Scripts as PSU.V2 (mkUntypedMintingPolicy)
 import qualified Ledger.Value as Value                          (flattenValue, singleton, Value)
-import qualified Plutus.V2.Ledger.Contexts as ContextsV2        (ScriptContext, scriptContext, TxInfo(..), txInfoMint, 
+import qualified Plutus.V2.Ledger.Contexts as ContextsV2        (ScriptContext, scriptContextTxInfo, TxInfo(..), txInfoMint, 
                                                                 txInfoOutputs, TxOut(..), txOutValue)
-import qualified Plutus.V2.Ledger.Api as PlutusV2               (CurrencySymbol,  
-                                                                MintingPolicy, mkMintingPolicyScript, wrapMintingPolicy,
-                                                                TokenName(..))
+import qualified Plutus.V2.Ledger.Api as PlutusV2               (CurrencySymbol, MintingPolicy, 
+                                                                 mkMintingPolicyScript, TokenName(..))
 import qualified PlutusTx                                       (applyCode, compile, liftCode)
-import           PlutusTx.Prelude                               (Bool(..), BuiltinData, check,  
-                                                                divide, Integer, Maybe(..), otherwise, 
+import           PlutusTx.Prelude                               (Bool(..), divide, Integer, Maybe(..), otherwise, 
                                                                 traceIfFalse, (&&), (==), ($), (-), (*))
 
 ------------------------------------------------------------------------
 -- On Chain Code
 ------------------------------------------------------------------------
-
-{-# INLINABLE minAda #-}
-minAda :: Value.Value
-minAda = Ada.lovelaceValueOf 2000000
 
                             
 -- | Check that the value is locked at an address for the provided outputs
@@ -62,7 +48,7 @@ validOutputs scriptAddr txVal (x:xs)
 -- | mkNFTPolicy is the minting policy is for creating the order token NFT when
 --   an order is submitted.
 {-# INLINABLE mkNFTPolicy #-}
-mkNFTPolicy :: NFTMintPolicyParams -> MintPolicyRedeemer -> ContextV2.ScriptContext -> Bool
+mkNFTPolicy :: NFTMintPolicyParams -> MintPolicyRedeemer -> ContextsV2.ScriptContext -> Bool
 mkNFTPolicy params (MintPolicyRedeemer polarity orderId adaAmount) ctx = 
 
     case polarity of
@@ -73,8 +59,8 @@ mkNFTPolicy params (MintPolicyRedeemer polarity orderId adaAmount) ctx =
         False ->   False   -- no burning allowed
 
   where
-    info :: ContextV2.TxInfo
-    info = ContextV2.scriptContextTxInfo ctx  
+    info :: ContextsV2.TxInfo
+    info = ContextsV2.scriptContextTxInfo ctx  
 
     split :: Integer
     split = nftSplit params
@@ -94,7 +80,7 @@ mkNFTPolicy params (MintPolicyRedeemer polarity orderId adaAmount) ctx =
 
     -- Check that there is only 1 token minted
     checkMintedAmount :: Bool
-    checkMintedAmount = case PlutusV2.flattenValue (ContextV2.txInfoMint info) of
+    checkMintedAmount = case Value.flattenValue (ContextsV2.txInfoMint info) of
         [(_, tn', amt)] -> tn' == orderId && amt == 1
         _               -> False
           
@@ -111,10 +97,12 @@ mkNFTPolicy params (MintPolicyRedeemer polarity orderId adaAmount) ctx =
 
 -- | Wrap the minting policy using the boilerplate template haskell code
 nftPolicy :: NFTMintPolicyParams -> PlutusV2.MintingPolicy
-nftPolicy mpParams = PlutusV2.mkMintingPolicyScript $
-    $$(PlutusTx.compile [|| \mpParams' -> PlutusV2.wrapMintingPolicy $ mkNFTPolicy mpParams' ||])
+nftPolicy mp = PlutusV2.mkMintingPolicyScript $
+    $$(PlutusTx.compile [|| wrap ||])
     `PlutusTx.applyCode`
-    PlutusTx.liftCode mpParams
+    PlutusTx.liftCode mp
+  where
+    wrap mp' = PSU.V2.mkUntypedMintingPolicy $ mkNFTPolicy mp' 
 
 
 -- | Provide the currency symbol of the minting policy which requires MintPolicyParams
@@ -122,6 +110,7 @@ nftPolicy mpParams = PlutusV2.mkMintingPolicyScript $
 {-# INLINABLE nftCurSymbol #-}
 nftCurSymbol :: NFTMintPolicyParams -> PlutusV2.CurrencySymbol
 nftCurSymbol mpParams = PSU.V2.scriptCurrencySymbol $ nftPolicy mpParams 
+
 
 -- | Return the value of the nftToken
 {-# INLINABLE nftTokenValue #-}
