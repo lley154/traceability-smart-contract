@@ -45,8 +45,8 @@ data NFTMintPolicyParams = NFTMintPolicyParams
 PlutusTx.makeIsDataIndexed ''NFTMintPolicyParams [('NFTMintPolicyParams,0)] 
 PlutusTx.makeLift ''NFTMintPolicyParams
 
--- | ValParams is used to pass the admin pkh, NFT & Littercoin token names as a parameter to the 
---   littercoin validator script
+-- | ValParams is used to pass the admin pkh, NFT & traceability token names as a parameter to the 
+--   traceability validator script
 data LockTokenValParams = LockTokenValParams
     {   
       ltvOrderId                 :: !Value.TokenName 

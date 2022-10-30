@@ -132,7 +132,7 @@ mkLockTokenValidator :: LockTokenValParams -> BuiltinData -> BuiltinData -> Buil
 mkLockTokenValidator _ _ _ _ = False
 
 
--- | Creating a wrapper around littercoin validator for 
+-- | Creating a wrapper around traceability validator for 
 --   performance improvements by not using a typed validator
 {-# INLINABLE wrapLockTokenValidator #-}
 wrapLockTokenValidator :: BuiltinData -> BuiltinData -> BuiltinData -> BuiltinData -> ()
