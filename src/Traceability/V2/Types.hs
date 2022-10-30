@@ -5,16 +5,15 @@
 {-# LANGUAGE ScopedTypeVariables        #-}
 {-# LANGUAGE TemplateHaskell            #-}
 
-module Traceability.V1.Types 
+module Traceability.V2.Types 
 (
      MintPolicyRedeemer(..)
    , NFTMintPolicyParams(..)
-   , LockTokenValParams(..)
 
 )where
 
 import qualified    Ledger.Address as Address           (PaymentPubKeyHash(..))
-import qualified Ledger.Value as Value                  (TokenName(..))
+import qualified    Ledger.Value as Value               (TokenName(..))
 import qualified    PlutusTx                            (makeIsDataIndexed, makeLift)
 import              PlutusTx.Prelude                    (Bool(..), Integer)
 import qualified    Prelude as Haskell                  (Show)
@@ -23,9 +22,9 @@ import qualified    Prelude as Haskell                  (Show)
 -- | The mint policy reeemder indicates if the token is to be minted or burned
 data MintPolicyRedeemer = MintPolicyRedeemer
     { 
-      mpPolarity                  :: !Bool              -- True = Mint, False = Burn
-    , mpOrderId                   :: !Value.TokenName   -- The order number
-    , mpAdaAmount                 :: !Integer           -- The total amount of the order 
+      mpPolarity                  :: Bool              -- True = Mint, False = Burn
+    , mpOrderId                   :: Value.TokenName   -- The order number
+    , mpAdaAmount                 :: Integer           -- The total amount of the order 
     } deriving Haskell.Show
 
 PlutusTx.makeIsDataIndexed ''MintPolicyRedeemer [('MintPolicyRedeemer,0)] 
@@ -36,21 +35,13 @@ PlutusTx.makeLift ''MintPolicyRedeemer
 --   into the minting poicy which will make the NFT policy unique
 data NFTMintPolicyParams = NFTMintPolicyParams
     { 
-      nftVersion                 :: !Integer  
-    , nftSplit                   :: !Integer
-    , nftMerchantPkh             :: !Address.PaymentPubKeyHash
-    , nftDonorPkh                :: !Address.PaymentPubKeyHash
+      nftVersion                 :: Integer  
+    , nftSplit                   :: Integer
+    , nftMerchantPkh             :: Address.PaymentPubKeyHash
+    , nftDonorPkh                :: Address.PaymentPubKeyHash
     } deriving Haskell.Show
 
 PlutusTx.makeIsDataIndexed ''NFTMintPolicyParams [('NFTMintPolicyParams,0)] 
 PlutusTx.makeLift ''NFTMintPolicyParams
 
--- | ValParams is used to pass the admin pkh, NFT & traceability token names as a parameter to the 
---   traceability validator script
-data LockTokenValParams = LockTokenValParams
-    {   
-      ltvOrderId                 :: !Value.TokenName 
-    } deriving Haskell.Show
 
-PlutusTx.makeIsDataIndexed ''LockTokenValParams [('LockTokenValParams,0)] 
-PlutusTx.makeLift ''LockTokenValParams
