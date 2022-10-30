@@ -27,7 +27,7 @@ set -x
 if [ -z $1 ]; 
 then
     echo "init-tx.sh:  Invalid script arguments"
-    echo "Usage: init-tx.sh [devnet|testnet|mainnet]"
+    echo "Usage: init-tx.sh [devnet|preview|mainnet]"
     exit 1
 fi
 ENV=$1
@@ -45,6 +45,11 @@ fi
 
 echo "Socket path: $CARDANO_NODE_SOCKET_PATH"
 ls -al "$CARDANO_NODE_SOCKET_PATH"
+
+mkdir -p $WORK
+mkdir -p $WORK-backup
+rm -f $WORK/*
+rm -f $WORK-backup/*
 
 # generate values from cardano-cli tool
 $CARDANO_CLI query protocol-parameters $network --out-file $WORK/pparms.json
@@ -87,9 +92,5 @@ $CARDANO_CLI transaction sign \
 
 echo "tx has been signed"
 
-#echo "Submit the tx with plutus script and wait 5 seconds..."
-#$CARDANO_CLI transaction submit --tx-file $WORK/init-tx-alonzo.tx $network
-
-
-
-
+echo "Submit the tx with plutus script and wait 5 seconds..."
+$CARDANO_CLI transaction submit --tx-file $WORK/init-tx-alonzo.tx $network
