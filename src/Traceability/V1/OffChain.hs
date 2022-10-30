@@ -38,7 +38,7 @@ import qualified Plutus.Contract as Contract        (AsContractError (_Constrain
 import           Plutus.Contract.Request as Request (mkTxContract, submitTxConfirmed, ownPaymentPubKeyHash)
 import           PlutusTx                           (toBuiltinData)
 import           PlutusTx.Prelude                   (Bool(..), BuiltinByteString, Integer, Maybe (..), ($), divide, 
-                                                     sha2_256, (-), (++), (*))
+                                                     (-), (++), (*))
 import qualified Prelude as Haskell                 (Semigroup ((<>)), Show (..), String)
 
 
@@ -73,8 +73,7 @@ mintNFTToken rp tp = do
     case Map.keys utxos of
         []       -> Contract.logError @Haskell.String "mintToken: No utxo found"
         oref : _ -> do
-            let orderIdHash = sha2_256 $ rpOrderId rp
-                tn = Value.TokenName $ orderIdHash
+            let tn = Value.TokenName $ rpOrderId rp
                 merchSplit = (rpAdaAmount rp) * (rpSplit rp)
                 donorSplit = (rpAdaAmount rp) * (100 - (tpSplit tp))
                 merchAmount = divide merchSplit 100
@@ -82,7 +81,7 @@ mintNFTToken rp tp = do
                 red = Scripts.Redeemer $ toBuiltinData $ MintPolicyRedeemer 
                      {
                         mpPolarity = True  -- mint token
-                     ,  mpOrderId = rpOrderId rp
+                     ,  mpOrderId = tn
                      ,  mpAdaAmount = rpAdaAmount rp
                      }
                 mintParams = NFTMintPolicyParams 
@@ -94,7 +93,7 @@ mintNFTToken rp tp = do
                     }
                 vParams = LockTokenValParams
                     {   
-                        ltvOrderId = rpOrderId rp
+                        ltvOrderId = tn
                     }
                 dat = PlutusTx.toBuiltinData ()
   

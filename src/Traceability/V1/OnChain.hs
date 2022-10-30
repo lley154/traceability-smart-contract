@@ -35,7 +35,7 @@ import qualified Ledger.Value as Value              (CurrencySymbol, flattenValu
 import           Plutus.V1.Ledger.Api as Ledger     (unsafeFromBuiltinData)
 import qualified PlutusTx                           (applyCode, compile, liftCode)
 import           PlutusTx.Prelude                   (Bool(..), BuiltinData, check,  
-                                                     divide, Integer, Maybe(..), otherwise, sha2_256, 
+                                                     divide, Integer, Maybe(..), otherwise, 
                                                      traceIfFalse, (&&), (==), ($), (-), (*))
 
 ------------------------------------------------------------------------
@@ -73,9 +73,6 @@ mkNFTPolicy params (MintPolicyRedeemer polarity orderId adaAmount) ctx =
     info :: TxInfo
     info = scriptContextTxInfo ctx  
 
-    tn :: Value.TokenName
-    tn = Value.TokenName $ sha2_256 orderId
-
     split :: Integer
     split = nftSplit params
 
@@ -95,7 +92,7 @@ mkNFTPolicy params (MintPolicyRedeemer polarity orderId adaAmount) ctx =
     -- Check that there is only 1 token minted
     checkMintedAmount :: Bool
     checkMintedAmount = case Value.flattenValue (txInfoMint info) of
-        [(_, tn', amt)] -> tn' == tn && amt == 1
+        [(_, tn', amt)] -> tn' == orderId && amt == 1
         _               -> False
           
     -- | Check that both the split amount value is correct and at the correct

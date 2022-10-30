@@ -14,8 +14,9 @@ module Traceability.V1.Types
 )where
 
 import qualified    Ledger.Address as Address           (PaymentPubKeyHash(..))
+import qualified Ledger.Value as Value                  (TokenName(..))
 import qualified    PlutusTx                            (makeIsDataIndexed, makeLift)
-import              PlutusTx.Prelude                    (Bool(..), BuiltinByteString, Integer)
+import              PlutusTx.Prelude                    (Bool(..), Integer)
 import qualified    Prelude as Haskell                  (Show)
 
 
@@ -23,7 +24,7 @@ import qualified    Prelude as Haskell                  (Show)
 data MintPolicyRedeemer = MintPolicyRedeemer
     { 
       mpPolarity                  :: !Bool              -- True = Mint, False = Burn
-    , mpOrderId                   :: !BuiltinByteString -- The order number
+    , mpOrderId                   :: !Value.TokenName   -- The order number
     , mpAdaAmount                 :: !Integer           -- The total amount of the order 
     } deriving Haskell.Show
 
@@ -48,7 +49,7 @@ PlutusTx.makeLift ''NFTMintPolicyParams
 --   littercoin validator script
 data LockTokenValParams = LockTokenValParams
     {   
-      ltvOrderId                 :: !BuiltinByteString
+      ltvOrderId                 :: !Value.TokenName 
     } deriving Haskell.Show
 
 PlutusTx.makeIsDataIndexed ''LockTokenValParams [('LockTokenValParams,0)] 
