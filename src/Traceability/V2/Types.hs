@@ -7,7 +7,8 @@
 
 module Traceability.V2.Types 
 (
-     MintPolicyRedeemer(..)
+     LockMintPolicyParams(..)
+   , MintPolicyRedeemer(..)
    , NFTMintPolicyParams(..)
 
 )where
@@ -43,5 +44,16 @@ data NFTMintPolicyParams = NFTMintPolicyParams
 
 PlutusTx.makeIsDataIndexed ''NFTMintPolicyParams [('NFTMintPolicyParams,0)] 
 PlutusTx.makeLift ''NFTMintPolicyParams
+
+
+-- | The Lock minting policy params passes parameters 
+--   into the minting poicy which will make the lock minting policy unique
+data LockMintPolicyParams = LockMintPolicyParams
+    { 
+      lmpOrderId                  :: Value.TokenName   -- The order number
+    } deriving Haskell.Show
+
+PlutusTx.makeIsDataIndexed ''LockMintPolicyParams [('LockMintPolicyParams,0)] 
+PlutusTx.makeLift ''LockMintPolicyParams
 
 

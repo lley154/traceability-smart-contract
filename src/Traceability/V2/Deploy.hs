@@ -39,11 +39,24 @@ import           Traceability.V2.OnChain
 -------------------------------------------------------------------------------------
 -- These are dummy values and need to be replaced with real values for
 -- the appropriate enviornment (eg devnet, testnet or mainnet)
+-- **************** WARNING ************************
+-- Any changes will require a new deployment of the nftMintingPolicy plutus script
+-- 1) cd to top level of project
+-- 2) nix-shell
+-- 3) cabal repl
+-- 4) Deploy> main
+-- 5) Deploy> q:
+-- 6) Update app with a new nftMintingPolicy address and policy id
+-- 7) cd scripts/cardano-cli/[preview|preprod|mainnet]/
+-- 8) Update global-export-properties.sh with new Admin UTXO (and collateral)
+-- 9) cd ..
+-- 10) ./init-tx.sh [preview|preprod|mainnet]
+-- 11) Wait for tx to be confirmed on the blockchain before proceeding
 -------------------------------------------------------------------------------------
 
 -- Version number
 version :: Integer
-version = 1
+version = 2
 
 -- Split of the order total amount between merchant and donor
 amountSplit :: Integer
@@ -89,6 +102,12 @@ nftMintParams = NFTMintPolicyParams
                 , nftDonorPkh = donorPaymentPkh
                 }
 
+lockMintParams :: LockMintPolicyParams
+lockMintParams = LockMintPolicyParams 
+                {
+                  lmpOrderId = nftTokName
+                }
+
 
 -------------------------------------------------------------------------------------
 -- END - Derived values 
@@ -107,6 +126,7 @@ main = do
     -- Generate plutus scripts and hashes
     writeNFTMintingPolicy
     writeNFTMintingPolicyHash
+    writeLockMintingPolicy
 
     return ()
 
@@ -140,11 +160,27 @@ writeNFTMintingPolicy = void $ writeFileTextEnvelope "deploy/nft-minting-policy.
     serialisedScript :: PlutusScript PlutusScriptV2
     serialisedScript = PlutusScriptSerialised scriptSBS
 
+
 writeNFTMintingPolicyHash :: IO ()
 writeNFTMintingPolicyHash = 
     LBS.writeFile "deploy/nft-minting-policy.hash" $ encode (scriptDataToJson ScriptDataJsonDetailedSchema $ fromPlutusData $ PlutusV2.toData mph)
   where
     mph = PlutusTx.toBuiltinData $ PSU.V2.mintingPolicyHash $ nftPolicy nftMintParams
+
+
+writeLockMintingPolicy :: IO ()
+writeLockMintingPolicy = void $ writeFileTextEnvelope "deploy/lock-minting-policy.plutus" Nothing serialisedScript
+  where
+    script :: PlutusV2.Script
+    script = PlutusV2.unMintingPolicyScript $ lockPolicy lockMintParams 
+
+    scriptSBS :: SBS.ShortByteString
+    scriptSBS = SBS.toShort . LBS.toStrict $ serialise script
+
+    serialisedScript :: PlutusScript PlutusScriptV2
+    serialisedScript = PlutusScriptSerialised scriptSBS
+
+
 
 
 
