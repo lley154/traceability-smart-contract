@@ -102,18 +102,10 @@ nftMintParams = NFTMintPolicyParams
                 , nftDonorPkh = donorPaymentPkh
                 }
 
-lockMintParams :: LockMintPolicyParams
-lockMintParams = LockMintPolicyParams 
-                {
-                  lmpOrderId = nftTokName
-                }
-
-
 -------------------------------------------------------------------------------------
 -- END - Derived values 
 -------------------------------------------------------------------------------------
  
-
 main::IO ()
 main = do
 
@@ -126,7 +118,6 @@ main = do
     -- Generate plutus scripts and hashes
     writeNFTMintingPolicy
     writeNFTMintingPolicyHash
-    writeLockMintingPolicy
 
     return ()
 
@@ -166,20 +157,6 @@ writeNFTMintingPolicyHash =
     LBS.writeFile "deploy/nft-minting-policy.hash" $ encode (scriptDataToJson ScriptDataJsonDetailedSchema $ fromPlutusData $ PlutusV2.toData mph)
   where
     mph = PlutusTx.toBuiltinData $ PSU.V2.mintingPolicyHash $ nftPolicy nftMintParams
-
-
-writeLockMintingPolicy :: IO ()
-writeLockMintingPolicy = void $ writeFileTextEnvelope "deploy/lock-minting-policy.plutus" Nothing serialisedScript
-  where
-    script :: PlutusV2.Script
-    script = PlutusV2.unMintingPolicyScript $ lockPolicy lockMintParams 
-
-    scriptSBS :: SBS.ShortByteString
-    scriptSBS = SBS.toShort . LBS.toStrict $ serialise script
-
-    serialisedScript :: PlutusScript PlutusScriptV2
-    serialisedScript = PlutusScriptSerialised scriptSBS
-
 
 
 

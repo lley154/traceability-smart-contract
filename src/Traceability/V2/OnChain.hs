@@ -11,13 +11,12 @@
 
 module Traceability.V2.OnChain 
     (
-      lockPolicy
-    , nftCurSymbol
+      nftCurSymbol
     , nftPolicy
     , nftTokenValue
     ) where
 
-import           Traceability.V2.Types                          (NFTMintPolicyParams(..), LockMintPolicyParams(..), MintPolicyRedeemer(..))
+import           Traceability.V2.Types                          (NFTMintPolicyParams(..), MintPolicyRedeemer(..))
 import qualified Ledger.Ada as Ada                              (lovelaceValueOf)
 import qualified Ledger.Address as Address                      (Address, pubKeyHashAddress)
 --import qualified Plutus.Script.Utils.Typed as Typed             (Any)
@@ -119,16 +118,3 @@ nftTokenValue :: PlutusV2.CurrencySymbol -> PlutusV2.TokenName -> Value.Value
 nftTokenValue cs' tn' = Value.singleton cs' tn' 1
 
 
--- | burnPolicy to lock a minted asset
-{-# INLINABLE lockPolicy #-}
-mkLockPolicy :: LockMintPolicyParams -> MintPolicyRedeemer -> ContextsV2.ScriptContext -> Bool
-mkLockPolicy _ _ _ = False
-
--- | Wrap the minting policy using the boilerplate template haskell code
-lockPolicy :: LockMintPolicyParams -> PlutusV2.MintingPolicy
-lockPolicy mp = PlutusV2.mkMintingPolicyScript $
-    $$(PlutusTx.compile [|| wrap ||])
-    `PlutusTx.applyCode`
-    PlutusTx.liftCode mp
-  where
-    wrap mp' = PSU.V2.mkUntypedMintingPolicy $ mkLockPolicy mp' 
