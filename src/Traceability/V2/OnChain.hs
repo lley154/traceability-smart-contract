@@ -19,14 +19,13 @@ module Traceability.V2.OnChain
 import           Traceability.V2.Types                          (NFTMintPolicyParams(..), MintPolicyRedeemer(..))
 import qualified Ledger.Ada as Ada                              (lovelaceValueOf)
 import qualified Ledger.Address as Address                      (Address, pubKeyHashAddress)
---import qualified Plutus.Script.Utils.Typed as Typed             (Any)
 import qualified Plutus.Script.Utils.V2.Scripts as PSU.V2       (scriptCurrencySymbol)
 import qualified Plutus.Script.Utils.V2.Typed.Scripts as PSU.V2 (mkUntypedMintingPolicy)
-import qualified Ledger.Value as Value                          (flattenValue, singleton, Value)
+import qualified Ledger.Value as Value                          (flattenValue, singleton, TokenName(..), Value)
 import qualified Plutus.V2.Ledger.Contexts as ContextsV2        (ScriptContext, scriptContextTxInfo, TxInfo(..), txInfoMint, 
                                                                 txInfoOutputs, TxOut(..), txOutValue)
 import qualified Plutus.V2.Ledger.Api as PlutusV2               (CurrencySymbol, MintingPolicy, 
-                                                                 mkMintingPolicyScript, TokenName(..))
+                                                                 mkMintingPolicyScript)
 import qualified PlutusTx                                       (applyCode, compile, liftCode)
 import           PlutusTx.Prelude                               (Bool(..), divide, Integer, Maybe(..), otherwise, 
                                                                 traceIfFalse, (&&), (==), ($), (-), (*))
@@ -49,7 +48,7 @@ validOutputs scriptAddr txVal (x:xs)
 --   an order is submitted.
 {-# INLINABLE mkNFTPolicy #-}
 mkNFTPolicy :: NFTMintPolicyParams -> MintPolicyRedeemer -> ContextsV2.ScriptContext -> Bool
-mkNFTPolicy params (MintPolicyRedeemer polarity orderId adaAmount) ctx = 
+mkNFTPolicy params (MintPolicyRedeemer polarity adaAmount) ctx = 
 
     case polarity of
         True ->    traceIfFalse "NFTP1" checkMintedAmount
@@ -60,11 +59,14 @@ mkNFTPolicy params (MintPolicyRedeemer polarity orderId adaAmount) ctx =
 
   where
     info :: ContextsV2.TxInfo
-    info = ContextsV2.scriptContextTxInfo ctx  
+    info = ContextsV2.scriptContextTxInfo ctx
+
+    tn :: Value.TokenName
+    tn = nftTokenName params  
 
     split :: Integer
     split = nftSplit params
-
+    
     merchantAddress :: Address.Address
     merchantAddress = Address.pubKeyHashAddress (nftMerchantPkh params) Nothing
 
@@ -81,7 +83,7 @@ mkNFTPolicy params (MintPolicyRedeemer polarity orderId adaAmount) ctx =
     -- Check that there is only 1 token minted
     checkMintedAmount :: Bool
     checkMintedAmount = case Value.flattenValue (ContextsV2.txInfoMint info) of
-        [(_, tn', amt)] -> tn' == orderId && amt == 1
+        [(_, tn', amt)] -> tn' == tn && amt == 1
         _               -> False
           
     -- | Check that both the split amount value is correct and at the correct
@@ -114,7 +116,7 @@ nftCurSymbol mpParams = PSU.V2.scriptCurrencySymbol $ nftPolicy mpParams
 
 -- | Return the value of the nftToken
 {-# INLINABLE nftTokenValue #-}
-nftTokenValue :: PlutusV2.CurrencySymbol -> PlutusV2.TokenName -> Value.Value
+nftTokenValue :: PlutusV2.CurrencySymbol -> Value.TokenName -> Value.Value
 nftTokenValue cs' tn' = Value.singleton cs' tn' 1
 
 

@@ -70,9 +70,9 @@ merchantPubKeyHashBS = "3d62bfdff66855d150b6cf97e4509ef78f5ea6245f642adf7629338c
 donorPubKeyHashBS :: B.ByteString
 donorPubKeyHashBS = "b2b0a5ceaf7bc9a56fe619819b8891e6bafeff5c2cb275e333f97a9f"
 
--- dummy order id for testing
-orderId :: BuiltinByteString
-orderId = "123"
+-- Token Name
+nftTokName :: Value.TokenName
+nftTokName = "EarthTrust"
 
 
 -------------------------------------------------------------------------------------
@@ -83,9 +83,6 @@ orderId = "123"
 -------------------------------------------------------------------------------------
 -- START - Derived values
 -------------------------------------------------------------------------------------
-
-nftTokName :: Value.TokenName
-nftTokName = Value.TokenName orderId
 
 merchantPaymentPkh :: Address.PaymentPubKeyHash
 merchantPaymentPkh = Address.PaymentPubKeyHash (PlutusV2.PubKeyHash $ decodeHex merchantPubKeyHashBS)
@@ -100,6 +97,7 @@ nftMintParams = NFTMintPolicyParams
                 , nftSplit = amountSplit
                 , nftMerchantPkh = merchantPaymentPkh
                 , nftDonorPkh = donorPaymentPkh
+                , nftTokenName = nftTokName
                 }
 
 -------------------------------------------------------------------------------------
@@ -132,7 +130,6 @@ writeRedeemerMintNFT =
     let red = PlutusV2.Redeemer $ PlutusTx.toBuiltinData $ MintPolicyRedeemer 
              {
                 mpPolarity = True     
-             ,  mpOrderId  = nftTokName  
              ,  mpAdaAmount  = 0   
              }
     in

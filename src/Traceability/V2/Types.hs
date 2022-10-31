@@ -23,7 +23,6 @@ import qualified    Prelude as Haskell                  (Show)
 data MintPolicyRedeemer = MintPolicyRedeemer
     { 
       mpPolarity                  :: Bool              -- True = Mint, False = Burn
-    , mpOrderId                   :: Value.TokenName   -- The order number
     , mpAdaAmount                 :: Integer           -- The total amount of the order 
     } deriving Haskell.Show
 
@@ -39,6 +38,7 @@ data NFTMintPolicyParams = NFTMintPolicyParams
     , nftSplit                   :: Integer
     , nftMerchantPkh             :: Address.PaymentPubKeyHash
     , nftDonorPkh                :: Address.PaymentPubKeyHash
+    , nftTokenName               :: Value.TokenName
     } deriving Haskell.Show
 
 PlutusTx.makeIsDataIndexed ''NFTMintPolicyParams [('NFTMintPolicyParams,0)] 
