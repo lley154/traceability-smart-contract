@@ -93,11 +93,11 @@ donorPaymentPkh = Address.PaymentPubKeyHash (PlutusV2.PubKeyHash $ decodeHex don
 etMintParams :: ETMintPolicyParams
 etMintParams = ETMintPolicyParams 
                 {
-                  etVersion = version
-                , etSplit = amountSplit
-                , etMerchantPkh = merchantPaymentPkh
-                , etDonorPkh = donorPaymentPkh
-                , etTokenName = etTokName
+                  etpVersion = version
+                , etpSplit = amountSplit
+                , etpMerchantPkh = merchantPaymentPkh
+                , etpDonorPkh = donorPaymentPkh
+                , etpTokenName = etTokName
                 }
 
 -------------------------------------------------------------------------------------
@@ -121,8 +121,8 @@ main = do
 
 
 writeETTokenName :: IO ()
-writeETTTokenName = 
-    LBS.writeFile "deploy/et-token-name.json" $ encode (scriptDataToJson ScriptDataJsonDetailedSchema $ fromPlutusData $ PlutusV2.toData nftTokName)    
+writeETTokenName = 
+    LBS.writeFile "deploy/token-name.json" $ encode (scriptDataToJson ScriptDataJsonDetailedSchema $ fromPlutusData $ PlutusV2.toData etTokName)    
 
 
 writeRedeemerMintET :: IO ()
@@ -133,11 +133,11 @@ writeRedeemerMintET =
              ,  mpAdaAmount  = 0   
              }
     in
-        LBS.writeFile "deploy/redeemer-mint-et.json" $ encode (scriptDataToJson ScriptDataJsonDetailedSchema $ fromPlutusData $ PlutusV2.toData red)
+        LBS.writeFile "deploy/redeemer-mint-token.json" $ encode (scriptDataToJson ScriptDataJsonDetailedSchema $ fromPlutusData $ PlutusV2.toData red)
 
 
 writeETMintingPolicy :: IO ()
-writeETMintingPolicy = void $ writeFileTextEnvelope "deploy/et-minting-policy.plutus" Nothing serialisedScript
+writeETMintingPolicy = void $ writeFileTextEnvelope "deploy/token-minting-policy.plutus" Nothing serialisedScript
   where
     script :: PlutusV2.Script
     script = PlutusV2.unMintingPolicyScript $ etPolicy etMintParams 
@@ -151,7 +151,7 @@ writeETMintingPolicy = void $ writeFileTextEnvelope "deploy/et-minting-policy.pl
 
 writeETMintingPolicyHash :: IO ()
 writeETMintingPolicyHash = 
-    LBS.writeFile "deploy/et-minting-policy.hash" $ encode (scriptDataToJson ScriptDataJsonDetailedSchema $ fromPlutusData $ PlutusV2.toData mph)
+    LBS.writeFile "deploy/token-minting-policy.id" $ encode (scriptDataToJson ScriptDataJsonDetailedSchema $ fromPlutusData $ PlutusV2.toData mph)
   where
     mph = PlutusTx.toBuiltinData $ PSU.V2.mintingPolicyHash $ etPolicy etMintParams
 
