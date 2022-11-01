@@ -11,12 +11,12 @@
 
 module Traceability.V2.OnChain 
     (
-      nftCurSymbol
-    , nftPolicy
-    , nftTokenValue
+      etCurSymbol
+    , etPolicy
+    , etTokenValue
     ) where
 
-import           Traceability.V2.Types                          (NFTMintPolicyParams(..), MintPolicyRedeemer(..))
+import           Traceability.V2.Types                          (ETMintPolicyParams(..), MintPolicyRedeemer(..))
 import qualified Ledger.Ada as Ada                              (lovelaceValueOf)
 import qualified Ledger.Address as Address                      (Address, pubKeyHashAddress)
 import qualified Plutus.Script.Utils.V2.Scripts as PSU.V2       (scriptCurrencySymbol)
@@ -46,9 +46,9 @@ validOutputs scriptAddr txVal (x:xs)
 
 -- | mkNFTPolicy is the minting policy is for creating the order token NFT when
 --   an order is submitted.
-{-# INLINABLE mkNFTPolicy #-}
-mkNFTPolicy :: NFTMintPolicyParams -> MintPolicyRedeemer -> ContextsV2.ScriptContext -> Bool
-mkNFTPolicy params (MintPolicyRedeemer polarity adaAmount) ctx = 
+{-# INLINABLE mkETPolicy #-}
+mkETPolicy :: ETMintPolicyParams -> MintPolicyRedeemer -> ContextsV2.ScriptContext -> Bool
+mkETPolicy params (MintPolicyRedeemer polarity adaAmount) ctx = 
 
     case polarity of
         True ->    traceIfFalse "NFTP1" checkMintedAmount
@@ -62,19 +62,19 @@ mkNFTPolicy params (MintPolicyRedeemer polarity adaAmount) ctx =
     info = ContextsV2.scriptContextTxInfo ctx
 
     tn :: Value.TokenName
-    tn = nftTokenName params  
+    tn = etpTokenName params  
 
     split :: Integer
-    split = nftSplit params
+    split = etpSplit params
     
     merchantAddress :: Address.Address
-    merchantAddress = Address.pubKeyHashAddress (nftMerchantPkh params) Nothing
+    merchantAddress = Address.pubKeyHashAddress (etpMerchantPkh params) Nothing
 
     merchantAmount :: Value.Value
     merchantAmount = Ada.lovelaceValueOf (divide (adaAmount * split) 100)
 
     donorAddress :: Address.Address
-    donorAddress = Address.pubKeyHashAddress (nftDonorPkh params) Nothing
+    donorAddress = Address.pubKeyHashAddress (etpDonorPkh params) Nothing
 
     donorAmount :: Value.Value
     donorAmount = Ada.lovelaceValueOf (divide (adaAmount * (100 - split)) 100)
@@ -98,25 +98,25 @@ mkNFTPolicy params (MintPolicyRedeemer polarity adaAmount) ctx =
 
 
 -- | Wrap the minting policy using the boilerplate template haskell code
-nftPolicy :: NFTMintPolicyParams -> PlutusV2.MintingPolicy
-nftPolicy mp = PlutusV2.mkMintingPolicyScript $
+etPolicy :: ETMintPolicyParams -> PlutusV2.MintingPolicy
+etPolicy mp = PlutusV2.mkMintingPolicyScript $
     $$(PlutusTx.compile [|| wrap ||])
     `PlutusTx.applyCode`
     PlutusTx.liftCode mp
   where
-    wrap mp' = PSU.V2.mkUntypedMintingPolicy $ mkNFTPolicy mp' 
+    wrap mp' = PSU.V2.mkUntypedMintingPolicy $ mkETPolicy mp' 
 
 
 -- | Provide the currency symbol of the minting policy which requires MintPolicyParams
 --   as a parameter to the minting policy
-{-# INLINABLE nftCurSymbol #-}
-nftCurSymbol :: NFTMintPolicyParams -> PlutusV2.CurrencySymbol
-nftCurSymbol mpParams = PSU.V2.scriptCurrencySymbol $ nftPolicy mpParams 
+{-# INLINABLE etCurSymbol #-}
+etCurSymbol :: ETMintPolicyParams -> PlutusV2.CurrencySymbol
+etCurSymbol mpParams = PSU.V2.scriptCurrencySymbol $ etPolicy mpParams 
 
 
 -- | Return the value of the nftToken
-{-# INLINABLE nftTokenValue #-}
-nftTokenValue :: PlutusV2.CurrencySymbol -> Value.TokenName -> Value.Value
-nftTokenValue cs' tn' = Value.singleton cs' tn' 1
+{-# INLINABLE etTokenValue #-}
+etTokenValue :: PlutusV2.CurrencySymbol -> Value.TokenName -> Value.Value
+etTokenValue cs' tn' = Value.singleton cs' tn' 1
 
 

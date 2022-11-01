@@ -71,8 +71,8 @@ donorPubKeyHashBS :: B.ByteString
 donorPubKeyHashBS = "b2b0a5ceaf7bc9a56fe619819b8891e6bafeff5c2cb275e333f97a9f"
 
 -- Token Name
-nftTokName :: Value.TokenName
-nftTokName = "EarthTrust"
+etTokName :: Value.TokenName
+etTokName = "Earthtrust"
 
 
 -------------------------------------------------------------------------------------
@@ -90,14 +90,14 @@ merchantPaymentPkh = Address.PaymentPubKeyHash (PlutusV2.PubKeyHash $ decodeHex 
 donorPaymentPkh :: Address.PaymentPubKeyHash
 donorPaymentPkh = Address.PaymentPubKeyHash (PlutusV2.PubKeyHash $ decodeHex donorPubKeyHashBS)
 
-nftMintParams :: NFTMintPolicyParams
-nftMintParams = NFTMintPolicyParams 
+etMintParams :: ETMintPolicyParams
+etMintParams = ETMintPolicyParams 
                 {
-                  nftVersion = version
-                , nftSplit = amountSplit
-                , nftMerchantPkh = merchantPaymentPkh
-                , nftDonorPkh = donorPaymentPkh
-                , nftTokenName = nftTokName
+                  etVersion = version
+                , etSplit = amountSplit
+                , etMerchantPkh = merchantPaymentPkh
+                , etDonorPkh = donorPaymentPkh
+                , etTokenName = etTokName
                 }
 
 -------------------------------------------------------------------------------------
@@ -108,39 +108,39 @@ main::IO ()
 main = do
 
     -- Generate token name 
-    writeNFTTokenName
+    writeETTokenName
 
     -- Generate redeemers
-    writeRedeemerMintNFT
+    writeRedeemerMintET
 
     -- Generate plutus scripts and hashes
-    writeNFTMintingPolicy
-    writeNFTMintingPolicyHash
+    writeETMintingPolicy
+    writeETMintingPolicyHash
 
     return ()
 
 
-writeNFTTokenName :: IO ()
-writeNFTTokenName = 
-    LBS.writeFile "deploy/nft-token-name.json" $ encode (scriptDataToJson ScriptDataJsonDetailedSchema $ fromPlutusData $ PlutusV2.toData nftTokName)    
+writeETTokenName :: IO ()
+writeETTTokenName = 
+    LBS.writeFile "deploy/et-token-name.json" $ encode (scriptDataToJson ScriptDataJsonDetailedSchema $ fromPlutusData $ PlutusV2.toData nftTokName)    
 
 
-writeRedeemerMintNFT :: IO ()
-writeRedeemerMintNFT = 
+writeRedeemerMintET :: IO ()
+writeRedeemerMintET = 
     let red = PlutusV2.Redeemer $ PlutusTx.toBuiltinData $ MintPolicyRedeemer 
              {
                 mpPolarity = True     
              ,  mpAdaAmount  = 0   
              }
     in
-        LBS.writeFile "deploy/redeemer-mint-nft.json" $ encode (scriptDataToJson ScriptDataJsonDetailedSchema $ fromPlutusData $ PlutusV2.toData red)
+        LBS.writeFile "deploy/redeemer-mint-et.json" $ encode (scriptDataToJson ScriptDataJsonDetailedSchema $ fromPlutusData $ PlutusV2.toData red)
 
 
-writeNFTMintingPolicy :: IO ()
-writeNFTMintingPolicy = void $ writeFileTextEnvelope "deploy/nft-minting-policy.plutus" Nothing serialisedScript
+writeETMintingPolicy :: IO ()
+writeETMintingPolicy = void $ writeFileTextEnvelope "deploy/et-minting-policy.plutus" Nothing serialisedScript
   where
     script :: PlutusV2.Script
-    script = PlutusV2.unMintingPolicyScript $ nftPolicy nftMintParams 
+    script = PlutusV2.unMintingPolicyScript $ etPolicy etMintParams 
 
     scriptSBS :: SBS.ShortByteString
     scriptSBS = SBS.toShort . LBS.toStrict $ serialise script
@@ -149,11 +149,11 @@ writeNFTMintingPolicy = void $ writeFileTextEnvelope "deploy/nft-minting-policy.
     serialisedScript = PlutusScriptSerialised scriptSBS
 
 
-writeNFTMintingPolicyHash :: IO ()
-writeNFTMintingPolicyHash = 
-    LBS.writeFile "deploy/nft-minting-policy.hash" $ encode (scriptDataToJson ScriptDataJsonDetailedSchema $ fromPlutusData $ PlutusV2.toData mph)
+writeETMintingPolicyHash :: IO ()
+writeETMintingPolicyHash = 
+    LBS.writeFile "deploy/et-minting-policy.hash" $ encode (scriptDataToJson ScriptDataJsonDetailedSchema $ fromPlutusData $ PlutusV2.toData mph)
   where
-    mph = PlutusTx.toBuiltinData $ PSU.V2.mintingPolicyHash $ nftPolicy nftMintParams
+    mph = PlutusTx.toBuiltinData $ PSU.V2.mintingPolicyHash $ etPolicy etMintParams
 
 
 

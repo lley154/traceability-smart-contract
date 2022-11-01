@@ -8,7 +8,7 @@
 module Traceability.V2.Types 
 (
      MintPolicyRedeemer(..)
-   , NFTMintPolicyParams(..)
+   , ETMintPolicyParams(..)
 
 )where
 
@@ -32,17 +32,17 @@ PlutusTx.makeLift ''MintPolicyRedeemer
 
 -- | The NFT minting policy params passes parameters 
 --   into the minting poicy which will make the NFT policy unique
-data NFTMintPolicyParams = NFTMintPolicyParams
+data ETMintPolicyParams = ETMintPolicyParams
     { 
-      nftVersion                 :: Integer  
-    , nftSplit                   :: Integer
-    , nftMerchantPkh             :: Address.PaymentPubKeyHash
-    , nftDonorPkh                :: Address.PaymentPubKeyHash
-    , nftTokenName               :: Value.TokenName
+      etpVersion                 :: Integer  
+    , etpSplit                   :: Integer
+    , etpMerchantPkh             :: Address.PaymentPubKeyHash
+    , etpDonorPkh                :: Address.PaymentPubKeyHash
+    , etpTokenName               :: Value.TokenName
     } deriving Haskell.Show
 
-PlutusTx.makeIsDataIndexed ''NFTMintPolicyParams [('NFTMintPolicyParams,0)] 
-PlutusTx.makeLift ''NFTMintPolicyParams
+PlutusTx.makeIsDataIndexed ''ETMintPolicyParams [('ETMintPolicyParams,0)] 
+PlutusTx.makeLift ''ETMintPolicyParams
 
 
 
