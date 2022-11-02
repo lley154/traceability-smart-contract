@@ -33,8 +33,7 @@ import           PlutusTx.Prelude                               (Bool(..), divid
 ------------------------------------------------------------------------
 -- On Chain Code
 ------------------------------------------------------------------------
-
-                            
+                                                      
 -- | Check that the value is locked at an address for the provided outputs
 {-# INLINABLE validOutputs #-}
 validOutputs :: Address.Address -> Value.Value -> [ContextsV2.TxOut] -> Bool

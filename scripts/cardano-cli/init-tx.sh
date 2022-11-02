@@ -9,8 +9,8 @@
 #           changes in the merchant and donor wallets, if the 
 #           split has changed and any version number changes.
 # Step 3.   nix-shell, cabal repl, main
-# Step 4.   Copy deploy/* scripts/cardano-cli/[devnet|testnet|mainnet]/data
-# Step 5.   Update scripts/cardano-cli/[devnet|testnet|mainnet]/global-export-variables.sh
+# Step 4.   Copy deploy/* scripts/cardano-cli/[devnet|preview|preprod|mainnet]/data
+# Step 5.   Update scripts/cardano-cli/[devnet|preview|preprod|mainnet]/global-export-variables.sh
 #           with the UTXO to be used for admin collateral
 ##############################################################
 
@@ -27,7 +27,7 @@ set -x
 if [ -z $1 ]; 
 then
     echo "init-tx.sh:  Invalid script arguments"
-    echo "Usage: init-tx.sh [devnet|preview|mainnet]"
+    echo "Usage: init-tx.sh [devnet|preview|preprod|mainnet]"
     exit 1
 fi
 ENV=$1
@@ -55,8 +55,8 @@ rm -f $WORK-backup/*
 $CARDANO_CLI query protocol-parameters $network --out-file $WORK/pparms.json
 
 # load in local variable values
-nft_mint_script="$BASE/scripts/cardano-cli/$ENV/data/nft-minting-policy.plutus"
-nft_mint_script_addr=$($CARDANO_CLI address build --payment-script-file "$nft_mint_script" $network)
+token_mint_script="$BASE/scripts/cardano-cli/$ENV/data/token-minting-policy.plutus"
+token_mint_script_addr=$($CARDANO_CLI address build --payment-script-file "$token_mint_script" $network)
 
 echo "starting traceability init script"
 
@@ -76,8 +76,8 @@ $CARDANO_CLI transaction build \
   --change-address "$admin_utxo_addr" \
   --tx-in-collateral "$ADMIN_COLLATERAL" \
   --tx-in "$admin_utxo_in" \
-  --tx-out "$nft_mint_script_addr+$MIN_ADA_OUTPUT_TX_REF" \
-  --tx-out-reference-script-file "$nft_mint_script" \
+  --tx-out "$token_mint_script_addr+$MIN_ADA_OUTPUT_TX_REF" \
+  --tx-out-reference-script-file "$token_mint_script" \
   --protocol-params-file "$WORK/pparms.json" \
   --out-file $WORK/init-tx-alonzo.body
 
