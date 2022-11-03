@@ -81,3 +81,4 @@ Submit the tx with plutus script and wait 5 seconds...
 + /usr/local/bin/cardano-cli transaction submit --tx-file /home/lawrence/src/traceability-smart-contract/work/add-ada-tx-alonzo.tx --testnet-magic 1
 Transaction successfully submitted.
 
+https://preprod.cexplorer.io/address/addr_test1wqndja7mxa68067p66nphaefk8tmgxqqeldzkmhhr4638qcgv84gd/tx#data
