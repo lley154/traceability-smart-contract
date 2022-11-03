@@ -74,6 +74,10 @@ donorPubKeyHashBS = "b2b0a5ceaf7bc9a56fe619819b8891e6bafeff5c2cb275e333f97a9f"
 adminPubKeyHashBS :: B.ByteString
 adminPubKeyHashBS = "b9abcf6867519e28042048aa11207214a52e6d5d3288b752d1c27682"
 
+-- Admin public key payment hash
+buyerPubKeyHashBS :: B.ByteString
+buyerPubKeyHashBS = "290f5ab67005518d393ef65908ab0efd8a70b1225ce875de79c86852"
+
 
 -------------------------------------------------------------------------------------
 -- END - traceability Minting Policy Parameters 
@@ -92,6 +96,9 @@ donorPaymentPkh = Address.PaymentPubKeyHash (PlutusV2.PubKeyHash $ decodeHex don
 
 adminPaymentPkh :: Address.PaymentPubKeyHash
 adminPaymentPkh = Address.PaymentPubKeyHash (PlutusV2.PubKeyHash $ decodeHex adminPubKeyHashBS)
+
+buyerPaymentPkh :: Address.PaymentPubKeyHash
+buyerPaymentPkh = Address.PaymentPubKeyHash (PlutusV2.PubKeyHash $ decodeHex buyerPubKeyHashBS)
 
 
 etvParams :: ETValidatorParams
@@ -112,7 +119,11 @@ main::IO ()
 main = do
 
     -- Generate redeemers
-    writeRedeemerET
+    writeRedeemerETSpend
+    writeRedeemerETRefund
+
+    -- Gerneate the datum
+    writeDatum
 
     -- Generate plutus scripts and hashes
     writeETValidator
@@ -120,13 +131,31 @@ main = do
 
     return ()
 
-
-
-writeRedeemerET :: IO ()
-writeRedeemerET = 
-    let red = PlutusV2.Redeemer $ PlutusTx.toBuiltinData ()
+writeDatum :: IO ()
+writeDatum = 
+    let etDatum = ETDatum 
+            {   etdAmount = 100000000                                         
+            ,   etdOrderId = "123"
+            ,   etdServiceFee = 500000
+            ,   etdRefundPkh = buyerPaymentPkh
+            }
+        dat = PlutusTx.toBuiltinData etDatum
     in
-        LBS.writeFile "deploy/redeemer-earthtrust.json" $ encode (scriptDataToJson ScriptDataJsonDetailedSchema $ fromPlutusData $ PlutusV2.toData red)
+        LBS.writeFile "deploy/datum-earthtrust.json" $ encode (scriptDataToJson ScriptDataJsonDetailedSchema $ fromPlutusData $ PlutusV2.toData dat)
+
+
+writeRedeemerETSpend :: IO ()
+writeRedeemerETSpend = 
+    let red = PlutusV2.Redeemer $ PlutusTx.toBuiltinData Spend
+    in
+        LBS.writeFile "deploy/redeemer-earthtrust-spend.json" $ encode (scriptDataToJson ScriptDataJsonDetailedSchema $ fromPlutusData $ PlutusV2.toData red)
+
+writeRedeemerETRefund :: IO ()
+writeRedeemerETRefund = 
+    let red = PlutusV2.Redeemer $ PlutusTx.toBuiltinData $ Refund 100000000
+    in
+        LBS.writeFile "deploy/redeemer-earthtrust-refund.json" $ encode (scriptDataToJson ScriptDataJsonDetailedSchema $ fromPlutusData $ PlutusV2.toData red)
+
 
 writeETValidator :: IO ()
 writeETValidator = void $ writeFileTextEnvelope "deploy/earthtrust-validator.plutus" Nothing serialisedScript
@@ -143,8 +172,6 @@ writeETValidator = void $ writeFileTextEnvelope "deploy/earthtrust-validator.plu
 writeETValidatorHash :: IO ()
 writeETValidatorHash = 
     LBS.writeFile "deploy/earthtrust-validator.hash" $ encode $ PlutusTx.toBuiltinData $ PTSU.V2.validatorHash $ typedETValidator $ PlutusTx.toBuiltinData etvParams
-
-
 
 
 -- | Decode from hex base 16 to a base 10 bytestring is needed because

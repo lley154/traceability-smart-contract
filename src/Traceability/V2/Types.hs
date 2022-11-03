@@ -7,7 +7,8 @@
 
 module Traceability.V2.Types 
 (
-   ETValidatorParams(..)
+  ETRedeemer(..)
+, ETValidatorParams(..)
 
 )where
 
@@ -16,9 +17,8 @@ import qualified    PlutusTx                            (makeIsDataIndexed, make
 import              PlutusTx.Prelude                    (Integer)
 import qualified    Prelude as Haskell                  (Show)
 
-
--- | The NFT minting policy params passes parameters 
---   into the minting poicy which will make the NFT policy unique
+-- | The earthtrust validator parameters that are used to hard code
+--   key parameters into the earthtrust smart contract
 data ETValidatorParams = ETValidatorParams
     { 
       etvVersion                 :: Integer  
@@ -31,5 +31,18 @@ data ETValidatorParams = ETValidatorParams
 PlutusTx.makeIsDataIndexed ''ETValidatorParams [('ETValidatorParams,0)] 
 PlutusTx.makeLift ''ETValidatorParams
 
+-- | The ETRedemeer used to indicate if the action is to spend or refund the
+--   the Ada locked at the smart contract
+data ETRedeemer = 
+       Spend            -- spend earthtrust locked Ada and send to merchant and donor 
+     | Refund Integer   -- refund locked Ada to customer
 
+    deriving Haskell.Show
+
+PlutusTx.makeIsDataIndexed
+  ''ETRedeemer
+  [ ('Spend, 0),
+    ('Refund, 1)
+  ]
+PlutusTx.makeLift ''ETRedeemer
 
