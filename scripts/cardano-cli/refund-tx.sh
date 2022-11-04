@@ -1,20 +1,5 @@
 #!/usr/bin/env bash
 
-##############################################################
-# You must do these steps first before running this script
-##############################################################
-#
-# Step 1.   Find the admin UTXO you will use
-# Step 2.   Update src/Traceability/V2/Deploy.hs if there has been any 
-#           changes in the merchant and donor wallets, if the 
-#           split has changed and any version number changes.
-# Step 3.   nix-shell, cabal repl, main
-# Step 4.   Copy deploy/* scripts/cardano-cli/[devnet|preview|preprod|mainnet]/data
-# Step 5.   Update scripts/cardano-cli/[devnet|preview|preprod|mainnet]/global-export-variables.sh
-#           with the UTXO to be used for admin collateral
-##############################################################
-
-
 # Unofficial bash strict mode.
 # See: http://redsymbol.net/articles/unofficial-bash-strict-mode/
 set -e
@@ -26,8 +11,8 @@ set -x
 # check if command line argument is empty or not present
 if [ -z $1 ]; 
 then
-    echo "init-tx.sh:  Invalid script arguments"
-    echo "Usage: init-tx.sh [devnet|preview|preprod|mainnet]"
+    echo "refund-tx.sh:  Invalid script arguments"
+    echo "Usage: refund-tx.sh [devnet|preview|preprod|mainnet]"
     exit 1
 fi
 ENV=$1
@@ -44,6 +29,7 @@ else
 fi
 
 echo "Socket path: $CARDANO_NODE_SOCKET_PATH"
+
 ls -al "$CARDANO_NODE_SOCKET_PATH"
 
 mkdir -p $WORK
@@ -51,18 +37,19 @@ mkdir -p $WORK-backup
 rm -f $WORK/*
 rm -f $WORK-backup/*
 
+
 # generate values from cardano-cli tool
 $CARDANO_CLI query protocol-parameters $network --out-file $WORK/pparms.json
 
 # load in local variable values
 validator_script="$BASE/scripts/cardano-cli/$ENV/data/earthtrust-validator.plutus"
 validator_script_addr=$($CARDANO_CLI address build --payment-script-file "$validator_script" $network)
+redeemer_file_path="$BASE/scripts/cardano-cli/$ENV/data/redeemer-earthtrust-refund.json"
 admin_pkh=$(cat $ADMIN_PKH)
 
-echo "starting traceability init script"
 
 ################################################################
-# Mint the threadtoken and attach it to the littercoin contract
+# Refund the earthtrust UTXO
 ################################################################
 
 # Step 1: Get UTXOs from admin
@@ -81,7 +68,39 @@ readarray admin_utxo_valid_array < $WORK/admin-utxo-collateral-valid.json
 admin_utxo_collateral_in=$(echo $admin_utxo_valid_array | tr -d '\n')
 
 
-# Step 2: Build and submit the transaction
+# Step 2: Get the earthtrust smart contract utxos
+$CARDANO_CLI query utxo --address $validator_script_addr $network --out-file $WORK/validator-utxo.json
+
+# Specify the utxo at the smart contract address we want to refund
+order_utxo_in="3408fce3b102cea3fcca34085afd5735a51b856ff3840ad6185c59b8284916ec#0"
+
+# Sepcify the amount of the refund
+refund_amount=101130000
+
+
+order_datum_in=$(jq -r 'to_entries[] 
+| select (.key == "'$order_utxo_in'") 
+| .value.inlineDatum' $WORK/validator-utxo.json)
+
+
+echo -n "$order_datum_in" > $WORK/datum-in.json
+
+# get the refund address
+refund_pkh=$(jq -r '.fields[3].bytes' $WORK/datum-in.json)
+
+echo -n $refund_pkh > $WORK/refund.vkey
+
+refund_addr=$($CARDANO_CLI address build $network --payment-verification-key-file $WORK/refund.vkey)
+
+
+# Upate the redeemer with the amount of add being added
+cat $redeemer_file_path | \
+jq -c '
+  .fields[0].int          |= '$refund_amount'' > $WORK/redeemer-earthtrust-refund.json 
+
+
+
+# Step 3: Build and submit the transaction
 $CARDANO_CLI transaction build \
   --babbage-era \
   --cardano-mode \
@@ -89,22 +108,26 @@ $CARDANO_CLI transaction build \
   --change-address "$admin_utxo_addr" \
   --tx-in-collateral "$admin_utxo_collateral_in" \
   --tx-in "$admin_utxo_in" \
-  --tx-out "$validator_script_addr+$MIN_ADA_OUTPUT_TX_REF" \
-  --tx-out-reference-script-file "$validator_script" \
+  --tx-in "$order_utxo_in" \
+  --spending-tx-in-reference "$VAL_REF_SCRIPT" \
+  --spending-plutus-script-v2 \
+  --spending-reference-tx-in-inline-datum-present \
+  --spending-reference-tx-in-redeemer-file "$redeemer_file_path" \
+  --tx-out "$refund_addr+$refund_amount" \
+  --required-signer-hash "$admin_pkh" \
   --protocol-params-file "$WORK/pparms.json" \
-  --out-file $WORK/init-tx-alonzo.body
-
+  --out-file $WORK/add-ada-tx-alonzo.body
 
 echo "tx has been built"
 
 $CARDANO_CLI transaction sign \
-  --tx-body-file $WORK/init-tx-alonzo.body \
+  --tx-body-file $WORK/add-ada-tx-alonzo.body \
   $network \
   --signing-key-file "${ADMIN_SKEY}" \
-  --out-file $WORK/init-tx-alonzo.tx
+  --out-file $WORK/add-ada-tx-alonzo.tx
 
 echo "tx has been signed"
 
-echo "Submit the tx with plutus script and wait 5 seconds..."
-$CARDANO_CLI transaction submit --tx-file $WORK/init-tx-alonzo.tx $network
+#echo "Submit the tx with plutus script and wait 5 seconds..."
+#$CARDANO_CLI transaction submit --tx-file $WORK/add-ada-tx-alonzo.tx $network
 

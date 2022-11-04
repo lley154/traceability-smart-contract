@@ -1,0 +1,84 @@
+lawrence@lawrence-MacBookAir:~/src/traceability-smart-contract/scripts/cardano-cli$ ./process-tx.sh preprod
++ '[' -z preprod ']'
++ ENV=preprod
++++ readlink -f ./process-tx.sh
+++ dirname /home/lawrence/src/traceability-smart-contract/scripts/cardano-cli/process-tx.sh
++ MY_DIR=/home/lawrence/src/traceability-smart-contract/scripts/cardano-cli
++ source /home/lawrence/src/traceability-smart-contract/scripts/cardano-cli/preprod/global-export-variables.sh
+++ set -e
+++ set -o pipefail
+++ export BASE=/home/lawrence/src/traceability-smart-contract
+++ BASE=/home/lawrence/src/traceability-smart-contract
+++ export WORK=/home/lawrence/src/traceability-smart-contract/work
+++ WORK=/home/lawrence/src/traceability-smart-contract/work
+++ export CARDANO_CLI=/usr/local/bin/cardano-cli
+++ CARDANO_CLI=/usr/local/bin/cardano-cli
+++ export CARDANO_NODE_SOCKET_PATH=/var/snap/docker/common/var-lib-docker/volumes/cardano-ipc/_data/node.socket
+++ CARDANO_NODE_SOCKET_PATH=/var/snap/docker/common/var-lib-docker/volumes/cardano-ipc/_data/node.socket
+++ export TESTNET_MAGIC=1
+++ TESTNET_MAGIC=1
+++ export ADMIN_VKEY=/home/lawrence/.local/keys/testnet/admin/admin.vkey
+++ ADMIN_VKEY=/home/lawrence/.local/keys/testnet/admin/admin.vkey
+++ export ADMIN_SKEY=/home/lawrence/.local/keys/testnet/admin/admin.skey
+++ ADMIN_SKEY=/home/lawrence/.local/keys/testnet/admin/admin.skey
+++ export ADMIN_PKH=/home/lawrence/.local/keys/testnet/admin/admin.hash
+++ ADMIN_PKH=/home/lawrence/.local/keys/testnet/admin/admin.hash
+++ export MIN_ADA_OUTPUT_TX=2000000
+++ MIN_ADA_OUTPUT_TX=2000000
+++ export MIN_ADA_OUTPUT_TX_REF=20000000
+++ MIN_ADA_OUTPUT_TX_REF=20000000
+++ export COLLATERAL_ADA=5000000
+++ COLLATERAL_ADA=5000000
+++ export ADMIN_UTXO=029166d2594117b8768462e0981ea35442a403550ca39db8d2b5c14d1142dbb2#0
+++ ADMIN_UTXO=029166d2594117b8768462e0981ea35442a403550ca39db8d2b5c14d1142dbb2#0
+++ export ADMIN_COLLATERAL=c0d8386d6c888f369b731002e32785100a09bd53b9f03ad8f299eb7bf89445c7#0
+++ ADMIN_COLLATERAL=c0d8386d6c888f369b731002e32785100a09bd53b9f03ad8f299eb7bf89445c7#0
+++ export ADMIN_CHANGE_ADDR=addr_test1vzu6hnmgvageu2qyypy25yfqwg222tndt5eg3d6j68p8dqspgdxn7
+++ ADMIN_CHANGE_ADDR=addr_test1vzu6hnmgvageu2qyypy25yfqwg222tndt5eg3d6j68p8dqspgdxn7
+++ export MERCHANT_ADDR=addr_test1vq7k907l7e59t52skm8e0ezsnmmc7h4xy30kg2klwc5n8rqug2pds
+++ MERCHANT_ADDR=addr_test1vq7k907l7e59t52skm8e0ezsnmmc7h4xy30kg2klwc5n8rqug2pds
+++ export DONOR_ADDR=addr_test1vzetpfww4aaunft0ucvcrxugj8nt4lhltsktya0rx0uh48cqghjfg
+++ DONOR_ADDR=addr_test1vzetpfww4aaunft0ucvcrxugj8nt4lhltsktya0rx0uh48cqghjfg
+++ export VAL_REF_SCRIPT=c4e996b158df519c49d4a0794cb00637d56a38fdea278bbfab89454925b9ea0e#1
+++ VAL_REF_SCRIPT=c4e996b158df519c49d4a0794cb00637d56a38fdea278bbfab89454925b9ea0e#1
++ '[' preprod == mainnet ']'
++ network='--testnet-magic 1'
++ echo 'Socket path: /var/snap/docker/common/var-lib-docker/volumes/cardano-ipc/_data/node.socket'
+Socket path: /var/snap/docker/common/var-lib-docker/volumes/cardano-ipc/_data/node.socket
++ ls -al /var/snap/docker/common/var-lib-docker/volumes/cardano-ipc/_data/node.socket
+srwxrwxrwx 1 root root 0 Nov  1 20:40 /var/snap/docker/common/var-lib-docker/volumes/cardano-ipc/_data/node.socket
++ mkdir -p /home/lawrence/src/traceability-smart-contract/work
++ mkdir -p /home/lawrence/src/traceability-smart-contract/work-backup
++ rm -f /home/lawrence/src/traceability-smart-contract/work/add-ada-tx-alonzo.body /home/lawrence/src/traceability-smart-contract/work/add-ada-tx-alonzo.tx /home/lawrence/src/traceability-smart-contract/work/datum-in.json /home/lawrence/src/traceability-smart-contract/work/pparms.json /home/lawrence/src/traceability-smart-contract/work/validator-utxo.json
++ rm -f '/home/lawrence/src/traceability-smart-contract/work-backup/*'
++ /usr/local/bin/cardano-cli query protocol-parameters --testnet-magic 1 --out-file /home/lawrence/src/traceability-smart-contract/work/pparms.json
++ validator_script=/home/lawrence/src/traceability-smart-contract/scripts/cardano-cli/preprod/data/earthtrust-validator.plutus
+++ /usr/local/bin/cardano-cli address build --payment-script-file /home/lawrence/src/traceability-smart-contract/scripts/cardano-cli/preprod/data/earthtrust-validator.plutus --testnet-magic 1
++ validator_script_addr=addr_test1wqndja7mxa68067p66nphaefk8tmgxqqeldzkmhhr4638qcgv84gd
++ redeemer_file_path=/home/lawrence/src/traceability-smart-contract/scripts/cardano-cli/preprod/data/redeemer-earthtrust.json
+++ cat /home/lawrence/.local/keys/testnet/admin/admin.hash
++ admin_pkh=b9abcf6867519e28042048aa11207214a52e6d5d3288b752d1c27682
++ ada_amount=100000000
++ '[' preprod == devnet ']'
++ admin_utxo_in=029166d2594117b8768462e0981ea35442a403550ca39db8d2b5c14d1142dbb2#0
++ admin_utxo_addr=addr_test1vzu6hnmgvageu2qyypy25yfqwg222tndt5eg3d6j68p8dqspgdxn7
++ /usr/local/bin/cardano-cli query utxo --address addr_test1wqndja7mxa68067p66nphaefk8tmgxqqeldzkmhhr4638qcgv84gd --testnet-magic 1 --out-file /home/lawrence/src/traceability-smart-contract/work/validator-utxo.json
++ validator_utxo_tx_in=c4e996b158df519c49d4a0794cb00637d56a38fdea278bbfab89454925b9ea0e#0
++ cp /home/lawrence/src/traceability-smart-contract/scripts/cardano-cli/preprod/data/datum-in.json /home/lawrence/src/traceability-smart-contract/work/datum-in.json
+++ jq -r '.fields[0].int' /home/lawrence/src/traceability-smart-contract/work/datum-in.json
++ total_ada=100000000
++ merchant_ada=95000000
++ donor_ada=5000000
++ /usr/local/bin/cardano-cli transaction build --babbage-era --cardano-mode --testnet-magic 1 --change-address addr_test1vzu6hnmgvageu2qyypy25yfqwg222tndt5eg3d6j68p8dqspgdxn7 --tx-in-collateral c0d8386d6c888f369b731002e32785100a09bd53b9f03ad8f299eb7bf89445c7#0 --tx-in 029166d2594117b8768462e0981ea35442a403550ca39db8d2b5c14d1142dbb2#0 --tx-in c4e996b158df519c49d4a0794cb00637d56a38fdea278bbfab89454925b9ea0e#0 --spending-tx-in-reference c4e996b158df519c49d4a0794cb00637d56a38fdea278bbfab89454925b9ea0e#1 --spending-plutus-script-v2 --spending-reference-tx-in-inline-datum-present --spending-reference-tx-in-redeemer-file /home/lawrence/src/traceability-smart-contract/scripts/cardano-cli/preprod/data/redeemer-earthtrust.json --tx-out addr_test1vq7k907l7e59t52skm8e0ezsnmmc7h4xy30kg2klwc5n8rqug2pds+95000000 --tx-out addr_test1vzetpfww4aaunft0ucvcrxugj8nt4lhltsktya0rx0uh48cqghjfg+5000000 --required-signer-hash b9abcf6867519e28042048aa11207214a52e6d5d3288b752d1c27682 --protocol-params-file /home/lawrence/src/traceability-smart-contract/work/pparms.json --out-file /home/lawrence/src/traceability-smart-contract/work/add-ada-tx-alonzo.body
+Estimated transaction fee: Lovelace 303932
++ echo 'tx has been built'
+tx has been built
++ /usr/local/bin/cardano-cli transaction sign --tx-body-file /home/lawrence/src/traceability-smart-contract/work/add-ada-tx-alonzo.body --testnet-magic 1 --signing-key-file /home/lawrence/.local/keys/testnet/admin/admin.skey --out-file /home/lawrence/src/traceability-smart-contract/work/add-ada-tx-alonzo.tx
++ echo 'tx has been signed'
+tx has been signed
++ echo 'Submit the tx with plutus script and wait 5 seconds...'
+Submit the tx with plutus script and wait 5 seconds...
++ /usr/local/bin/cardano-cli transaction submit --tx-file /home/lawrence/src/traceability-smart-contract/work/add-ada-tx-alonzo.tx --testnet-magic 1
+Transaction successfully submitted.
+
+https://preprod.cexplorer.io/address/addr_test1wqndja7mxa68067p66nphaefk8tmgxqqeldzkmhhr4638qcgv84gd/tx#data
