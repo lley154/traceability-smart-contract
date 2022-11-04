@@ -11,8 +11,8 @@ set -x
 # check if command line argument is empty or not present
 if [ -z $1 ]; 
 then
-    echo "add-ada-tx.sh:  Invalid script arguments"
-    echo "Usage: add-ada-tx.sh [devnet|preview|preprod|mainnet]"
+    echo "process-tx.sh:  Invalid script arguments"
+    echo "Usage: process-tx.sh [devnet|preview|preprod|mainnet]"
     exit 1
 fi
 ENV=$1
@@ -44,10 +44,9 @@ $CARDANO_CLI query protocol-parameters $network --out-file $WORK/pparms.json
 # load in local variable values
 validator_script="$BASE/scripts/cardano-cli/$ENV/data/earthtrust-validator.plutus"
 validator_script_addr=$($CARDANO_CLI address build --payment-script-file "$validator_script" $network)
-redeemer_file_path="$BASE/scripts/cardano-cli/$ENV/data/redeemer-earthtrust.json"
+redeemer_file_path="$BASE/scripts/cardano-cli/$ENV/data/redeemer-earthtrust-spend.json"
 admin_pkh=$(cat $ADMIN_PKH)
 
-ada_amount=100000000
 
 ################################################################
 # Spend the earthtrust UTXO
@@ -56,60 +55,42 @@ ada_amount=100000000
 # Step 1: Get UTXOs from admin
 # There needs to be at least 2 utxos that can be consumed; one for spending of the token
 # and one uxto for collateral
-if [ "$ENV" == "devnet" ];
-then
-    admin_utxo_addr=$($CARDANO_CLI address build $network --payment-verification-key-file "$ADMIN_VKEY")
-    $CARDANO_CLI query utxo --address "$admin_utxo_addr" --cardano-mode $network --out-file $WORK/admin-utxo.json
-    cat $WORK/admin-utxo.json | jq -r 'to_entries[] | select(.value.value.lovelace > '$COLLATERAL_ADA' ) | .key' > $WORK/admin-utxo-valid.json
-    readarray admin_utxo_valid_array < $WORK/admin-utxo-valid.json
-    admin_utxo_in=$(echo $admin_utxo_valid_array | tr -d '\n')
-else
-    admin_utxo_in=$ADMIN_UTXO
-    admin_utxo_addr=$ADMIN_CHANGE_ADDR
-fi
+
+admin_utxo_addr=$($CARDANO_CLI address build $network --payment-verification-key-file "$ADMIN_VKEY")
+$CARDANO_CLI query utxo --address "$admin_utxo_addr" --cardano-mode $network --out-file $WORK/admin-utxo.json
+
+cat $WORK/admin-utxo.json | jq -r 'to_entries[] | select(.value.value.lovelace > '$COLLATERAL_ADA' ) | .key' > $WORK/admin-utxo-valid.json
+readarray admin_utxo_valid_array < $WORK/admin-utxo-valid.json
+admin_utxo_in=$(echo $admin_utxo_valid_array | tr -d '\n')
+
+cat $WORK/admin-utxo.json | jq -r 'to_entries[] | select(.value.value.lovelace == '$COLLATERAL_ADA' ) | .key' > $WORK/admin-utxo-collateral-valid.json
+readarray admin_utxo_valid_array < $WORK/admin-utxo-collateral-valid.json
+admin_utxo_collateral_in=$(echo $admin_utxo_valid_array | tr -d '\n')
 
 
 # Step 2: Get the earthtrust smart contract utxos
 $CARDANO_CLI query utxo --address $validator_script_addr $network --out-file $WORK/validator-utxo.json
 
-# Pull the utxo with the thread token in it
-#lc_validator_utxo_tx_in=$(jq -r 'to_entries[] 
-#| select(.value.value."'$thread_token_mph'"."'$thread_token_name'") 
-#| .key' $WORK/lc-validator-utxo.json)
 
-validator_utxo_tx_in=c4e996b158df519c49d4a0794cb00637d56a38fdea278bbfab89454925b9ea0e#0 
-
-
-# Pull the datum with the thread token attached to the utxo
-#lc_validator_datum_in=$(jq -r 'to_entries[] 
-#| select(.value.value."'$thread_token_mph'"."'$thread_token_name'") 
-#| .value.inlineDatum' $WORK/lc-validator-utxo.json)
+#validator_utxo_tx_in=c4e996b158df519c49d4a0794cb00637d56a38fdea278bbfab89454925b9ea0e#0 
+order_utxo_in=$(jq -r 'to_entries[] 
+| select(.value.inlineDatum 
+| length > 0) | .key' $WORK/validator-utxo.json)
 
 #validator_datum_in={"constructor":0,"fields":[{"int":100000000}]}
+order_datum_in=$(jq -r 'to_entries[] 
+| select(.value.inlineDatum 
+| length > 0) 
+| .value.inlineDatum' $WORK/validator-utxo.json)
 
-
-# Save the inline datum to disk
-#echo -n "$lc_validator_datum_in" | jq 'to_entries[] | .value.inlineDatum' > $WORK/lc-datum-in.json
-#echo -n "$lc_validator_datum_in" > $WORK/lc-datum-in.json
-cp $BASE/scripts/cardano-cli/$ENV/data/datum-in.json $WORK/datum-in.json
+echo -n "$order_datum_in" > $WORK/datum-in.json
 
 
 # get the total order amount in Ada
 total_ada=$(jq -r '.fields[0].int' $WORK/datum-in.json)
+service_fee=$(jq -r '.fields[2].int' $WORK/datum-in.json)
 merchant_ada=$((total_ada * 95 / 100))
 donor_ada=$((total_ada * 5 / 100))
-
-
-# Update the littercoin datum accordingly
-#cat $WORK/lc-datum-in.json | \
-#jq -c '
-#  .fields[0].int   |= '$new_total_ada'' > $WORK/lc-datum-out.json
-
-
-# Upate the redeemer with the amount of add being added
-#cat $redeemer_file_path | \
-#jq -c '
-#  .fields[0].int          |= '$ada_amount'' > $WORK/redeemer-add-ada.json
 
 
 # Step 3: Build and submit the transaction
@@ -118,9 +99,9 @@ $CARDANO_CLI transaction build \
   --cardano-mode \
   $network \
   --change-address "$admin_utxo_addr" \
-  --tx-in-collateral "$ADMIN_COLLATERAL" \
+  --tx-in-collateral "$admin_utxo_collateral_in" \
   --tx-in "$admin_utxo_in" \
-  --tx-in "$validator_utxo_tx_in" \
+  --tx-in "$order_utxo_in" \
   --spending-tx-in-reference "$VAL_REF_SCRIPT" \
   --spending-plutus-script-v2 \
   --spending-reference-tx-in-inline-datum-present \
@@ -133,6 +114,8 @@ $CARDANO_CLI transaction build \
 
 echo "tx has been built"
 
+#   --tx-out "$admin_utxo_addr+$service_fee" \
+
 $CARDANO_CLI transaction sign \
   --tx-body-file $WORK/add-ada-tx-alonzo.body \
   $network \
@@ -143,6 +126,5 @@ echo "tx has been signed"
 
 echo "Submit the tx with plutus script and wait 5 seconds..."
 $CARDANO_CLI transaction submit --tx-file $WORK/add-ada-tx-alonzo.tx $network
-
 
 

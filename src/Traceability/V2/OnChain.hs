@@ -140,7 +140,7 @@ mkETValidator params dat red ctx =
         -- | Checks that the amount in the datum matches the actual amount in the input
         --   transaction
         checkInput :: Bool
-        checkInput = validInput (Ada.lovelaceValueOf adaAmount) (ContextsV2.txInfoInputs info)
+        checkInput = validInput (Ada.lovelaceValueOf (adaAmount + serviceFee)) (ContextsV2.txInfoInputs info)
 
         -- | Checks that the amount in the datum matches the actual amount in the input
         --   transaction
