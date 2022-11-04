@@ -56,7 +56,7 @@ import           Traceability.V2.OnChain
 
 -- Version number
 version :: Integer
-version = 1
+version = 2
 
 -- Split of the order total amount between merchant and donor
 amountSplit :: Integer

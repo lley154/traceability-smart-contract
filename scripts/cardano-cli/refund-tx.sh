@@ -72,24 +72,25 @@ admin_utxo_collateral_in=$(echo $admin_utxo_valid_array | tr -d '\n')
 $CARDANO_CLI query utxo --address $validator_script_addr $network --out-file $WORK/validator-utxo.json
 
 # Specify the utxo at the smart contract address we want to refund
-order_utxo_tx_in=c4e996b158df519c49d4a0794cb00637d56a38fdea278bbfab89454925b9ea0e#0 
+order_utxo_in="3408fce3b102cea3fcca34085afd5735a51b856ff3840ad6185c59b8284916ec#0"
 
 # Sepcify the amount of the refund
-refund_amount=107140000
+refund_amount=101130000
 
 
 order_datum_in=$(jq -r 'to_entries[] 
-| select (.key == '"$order_utxo_tx_in"' 
+| select (.key == "'$order_utxo_in'") 
 | .value.inlineDatum' $WORK/validator-utxo.json)
 
 
 echo -n "$order_datum_in" > $WORK/datum-in.json
 
 # get the refund address
-refund_addr=$(jq -r '.fields[3].bytes' $WORK/datum-in.json)
+refund_pkh=$(jq -r '.fields[3].bytes' $WORK/datum-in.json)
 
-# get the service fee
-service_fee=$(jq -r '.fields[2].int' $WORK/datum-in.json)
+echo -n $refund_pkh > $WORK/refund.vkey
+
+refund_addr=$($CARDANO_CLI address build $network --payment-verification-key-file $WORK/refund.vkey)
 
 
 # Upate the redeemer with the amount of add being added
@@ -113,7 +114,6 @@ $CARDANO_CLI transaction build \
   --spending-reference-tx-in-inline-datum-present \
   --spending-reference-tx-in-redeemer-file "$redeemer_file_path" \
   --tx-out "$refund_addr+$refund_amount" \
-  --tx-out "$admin_utxo_addr+$service_fee" \
   --required-signer-hash "$admin_pkh" \
   --protocol-params-file "$WORK/pparms.json" \
   --out-file $WORK/add-ada-tx-alonzo.body

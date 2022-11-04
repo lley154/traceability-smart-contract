@@ -45,6 +45,7 @@ $CARDANO_CLI query protocol-parameters $network --out-file $WORK/pparms.json
 validator_script="$BASE/scripts/cardano-cli/$ENV/data/earthtrust-validator.plutus"
 validator_script_addr=$($CARDANO_CLI address build --payment-script-file "$validator_script" $network)
 redeemer_file_path="$BASE/scripts/cardano-cli/$ENV/data/redeemer-earthtrust-spend.json"
+
 admin_pkh=$(cat $ADMIN_PKH)
 
 
@@ -86,11 +87,33 @@ order_datum_in=$(jq -r 'to_entries[]
 echo -n "$order_datum_in" > $WORK/datum-in.json
 
 
-# get the total order amount in Ada
-total_ada=$(jq -r '.fields[0].int' $WORK/datum-in.json)
+# get the order details from the datum
+order_ada=$(jq -r '.fields[0].int' $WORK/datum-in.json)
+order_id=$(jq -r '.fields[1].bytes' $WORK/datum-in.json)
+order_id_non_hex=$(echo -n "$order_id=" | xxd -r -p)
 service_fee=$(jq -r '.fields[2].int' $WORK/datum-in.json)
-merchant_ada=$((total_ada * 95 / 100))
-donor_ada=$((total_ada * 5 / 100))
+merchant_split=$SPLIT
+donor_split=$((100 - $SPLIT)) 
+merchant_ada=$((order_ada * $merchant_split / 100))
+donor_ada=$((order_ada * $donor_split / 100))
+now=$(date '+%Y/%m/%d-%H:%M:%S')
+
+metadata="{
+\"1\" : {
+    \"order_detail\" : {
+        \"date\" : \"$now\",
+        \"donation_ada_amount\" : \"$donor_ada\",
+        \"donation_split\" : \"$donor_split%\",
+        \"order_id\" : \"$order_id_non_hex\",
+        \"order_ada_amount\" : \"$order_ada\",
+        \"version\" : \"1.0\"
+        }
+    }
+}"
+
+echo $metadata > $BASE/scripts/cardano-cli/$ENV/data/earthtrust-metadata.json
+metadata_file_path="$BASE/scripts/cardano-cli/$ENV/data/earthtrust-metadata.json"
+
 
 
 # Step 3: Build and submit the transaction
@@ -110,11 +133,11 @@ $CARDANO_CLI transaction build \
   --tx-out "$DONOR_ADDR+$donor_ada" \
   --required-signer-hash "$admin_pkh" \
   --protocol-params-file "$WORK/pparms.json" \
+  --metadata-json-file "$metadata_file_path" \
   --out-file $WORK/add-ada-tx-alonzo.body
 
 echo "tx has been built"
 
-#   --tx-out "$admin_utxo_addr+$service_fee" \
 
 $CARDANO_CLI transaction sign \
   --tx-body-file $WORK/add-ada-tx-alonzo.body \
