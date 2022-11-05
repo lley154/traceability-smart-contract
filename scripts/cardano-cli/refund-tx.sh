@@ -72,25 +72,30 @@ admin_utxo_collateral_in=$(echo $admin_utxo_valid_array | tr -d '\n')
 $CARDANO_CLI query utxo --address $validator_script_addr $network --out-file $WORK/validator-utxo.json
 
 # Specify the utxo at the smart contract address we want to refund
-order_utxo_in="3408fce3b102cea3fcca34085afd5735a51b856ff3840ad6185c59b8284916ec#0"
+order_utxo_in="ecc2ebe94aac10cdfc42ac5ad355c2dccdc0492f2cd6db8d5ce7cc9fa53c1671"
+order_utxo_in_txid="$order_utxo_in#0"
 
 # Sepcify the amount of the refund
-refund_amount=101130000
+refund_amount=100210000
 
 
-order_datum_in=$(jq -r 'to_entries[] 
-| select (.key == "'$order_utxo_in'") 
-| .value.inlineDatum' $WORK/validator-utxo.json)
+curl -H "project_id: $BLOCKFROST_API_KEY " "$BLOCKFROST_API/txs/$order_utxo_in/utxos" > $WORK/refund-utxo.json
+refund_addr=$(jq -r '.inputs[0].address' $WORK/refund-utxo.json)
 
 
-echo -n "$order_datum_in" > $WORK/datum-in.json
+#order_datum_in=$(jq -r 'to_entries[] 
+#| select (.key == "'$order_utxo_in'") 
+#| .value.inlineDatum' $WORK/validator-utxo.json)
+
+
+#echo -n "$order_datum_in" > $WORK/datum-in.json
 
 # get the refund address
-refund_pkh=$(jq -r '.fields[3].bytes' $WORK/datum-in.json)
+#refund_pkh=$(jq -r '.fields[3].bytes' $WORK/datum-in.json)
 
-echo -n $refund_pkh > $WORK/refund.vkey
+#echo -n $refund_pkh > $WORK/refund.vkey
 
-refund_addr=$($CARDANO_CLI address build $network --payment-verification-key-file $WORK/refund.vkey)
+#refund_addr=$($CARDANO_CLI address build $network --payment-verification-key-file $WORK/refund.vkey)
 
 
 # Upate the redeemer with the amount of add being added
@@ -108,7 +113,7 @@ $CARDANO_CLI transaction build \
   --change-address "$admin_utxo_addr" \
   --tx-in-collateral "$admin_utxo_collateral_in" \
   --tx-in "$admin_utxo_in" \
-  --tx-in "$order_utxo_in" \
+  --tx-in "$order_utxo_in_txid" \
   --spending-tx-in-reference "$VAL_REF_SCRIPT" \
   --spending-plutus-script-v2 \
   --spending-reference-tx-in-inline-datum-present \

@@ -23,3 +23,5 @@ export MERCHANT_ADDR=addr_test1vq7k907l7e59t52skm8e0ezsnmmc7h4xy30kg2klwc5n8rqug
 export DONOR_ADDR=addr_test1vzetpfww4aaunft0ucvcrxugj8nt4lhltsktya0rx0uh48cqghjfg
 export VAL_REF_SCRIPT=6b053506e9c25edbe916bae361f297df9df0edcc2a937d74beaf16d5679bf09b#1
 export SPLIT=95
+export BLOCKFROST_API_KEY=preprodxg6GaNVZoHWUfQd7HQcgUg8epWhE1aMi
+export BLOCKFROST_API=https://cardano-preprod.blockfrost.io/api/v0
