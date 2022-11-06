@@ -72,17 +72,21 @@ admin_utxo_collateral_in=$(echo $admin_utxo_valid_array | tr -d '\n')
 # Step 2: Get the earthtrust smart contract utxos
 $CARDANO_CLI query utxo --address $validator_script_addr $network --out-file $WORK/validator-utxo.json
 
-
-#validator_utxo_tx_in=c4e996b158df519c49d4a0794cb00637d56a38fdea278bbfab89454925b9ea0e#0 
-order_utxo_in=$(jq -r 'to_entries[] 
-| select(.value.inlineDatum 
-| length > 0) | .key' $WORK/validator-utxo.json)
-
-#validator_datum_in={"constructor":0,"fields":[{"int":100000000}]}
-order_datum_in=$(jq -r 'to_entries[] 
+order_utxo_in=$(jq -r '[to_entries[] 
 | select(.value.inlineDatum 
 | length > 0) 
-| .value.inlineDatum' $WORK/validator-utxo.json)
+| .key][0]' $WORK/validator-utxo.json)
+
+# check if there are any utxos at the validator, if not, then exit
+if [ $order_utxo_in == null ];
+then
+    exit 0
+fi
+
+order_datum_in=$(jq -r '[to_entries[] 
+| select(.value.inlineDatum 
+| length > 0) 
+| .value.inlineDatum][0] ' $WORK/validator-utxo.json)
 
 echo -n "$order_datum_in" > $WORK/datum-in.json
 
