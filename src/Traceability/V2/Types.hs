@@ -27,6 +27,7 @@ data ETValidatorParams = ETValidatorParams
     , etvMerchantPkh             :: Address.PaymentPubKeyHash
     , etvDonorPkh                :: Address.PaymentPubKeyHash
     , etvAdminPkh                :: Address.PaymentPubKeyHash
+    , etvRefundPkh               :: Address.PaymentPubKeyHash
     } deriving Haskell.Show
 
 PlutusTx.makeIsDataIndexed ''ETValidatorParams [('ETValidatorParams,0)] 

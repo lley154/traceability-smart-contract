@@ -2,12 +2,12 @@
 ######################################### SPEND TEST CASE ##########################################
 ####################################################################################################
 
-[nix-shell:~/src/traceability-smart-contract]$ cardano-cli query utxo --address addr_test1wzetwau034znxxqlfdqph57w96dznktf8v86a8w4263lfnqph0y2k --cardano-mode --testnet-magic 1
+
+[nix-shell:~/src/traceability-smart-contract]$ cardano-cli query utxo --address addr_test1wp98u3s8wjrfxpjlerzlw2wg9a6k5ws8cc25gadtcxfe7xs6g8lm9 --cardano-mode --testnet-magic 1
                            TxHash                                 TxIx        Amount
 --------------------------------------------------------------------------------------
-087e8cfaeaee4d5eb0cc90187229a899d68ca282b9dd2eea61612b00c0c0a522     1        20000000 lovelace + TxOutDatumNone
-22147586a56e1b22230761a32e90c719d1e9d5a622a52593e3be1a82e8888832     0        100450000 lovelace + TxOutDatumInline ReferenceTxInsScriptsInlineDatumsInBabbageEra (ScriptDataConstructor 0 [ScriptDataNumber 99950000,ScriptDataBytes "4652554453057"])
-
+b29ef55ae27c5e5942a18ed5545b461c84610bab66bd59b18d37e712fe67cb18     1        20000000 lovelace + TxOutDatumNone
+f7c58a4d27ebc11f0f63ba632d568604d12c2a286de3927295ccb64412de0110     0        101620000 lovelace + TxOutDatumInline ReferenceTxInsScriptsInlineDatumsInBabbageEra (ScriptDataConstructor 0 [ScriptDataNumber 101120000,ScriptDataBytes "4652878069825"])
 
 
 lawrence@lawrence-MacBookAir:~/src/traceability-smart-contract/scripts/cardano-cli$ ./spend-tx.sh preprod
@@ -47,8 +47,10 @@ lawrence@lawrence-MacBookAir:~/src/traceability-smart-contract/scripts/cardano-c
 ++ MERCHANT_ADDR=addr_test1vq7k907l7e59t52skm8e0ezsnmmc7h4xy30kg2klwc5n8rqug2pds
 ++ export DONOR_ADDR=addr_test1vzetpfww4aaunft0ucvcrxugj8nt4lhltsktya0rx0uh48cqghjfg
 ++ DONOR_ADDR=addr_test1vzetpfww4aaunft0ucvcrxugj8nt4lhltsktya0rx0uh48cqghjfg
-++ export VAL_REF_SCRIPT=087e8cfaeaee4d5eb0cc90187229a899d68ca282b9dd2eea61612b00c0c0a522#1
-++ VAL_REF_SCRIPT=087e8cfaeaee4d5eb0cc90187229a899d68ca282b9dd2eea61612b00c0c0a522#1
+++ export REFUND_ADDR=addr_test1vzs24vjh8salzqt5pahgvr34ewfwagxaxr5pz7eswugzn2gmw4f5w
+++ REFUND_ADDR=addr_test1vzs24vjh8salzqt5pahgvr34ewfwagxaxr5pz7eswugzn2gmw4f5w
+++ export VAL_REF_SCRIPT=b29ef55ae27c5e5942a18ed5545b461c84610bab66bd59b18d37e712fe67cb18#1
+++ VAL_REF_SCRIPT=b29ef55ae27c5e5942a18ed5545b461c84610bab66bd59b18d37e712fe67cb18#1
 ++ export SPLIT=95
 ++ SPLIT=95
 ++ export BLOCKFROST_API_KEY=preprodxg6GaNVZoHWUfQd7HQcgUg8epWhE1aMi
@@ -63,12 +65,12 @@ Socket path: /var/snap/docker/common/var-lib-docker/volumes/cardano-ipc/_data/no
 srwxrwxrwx 1 root root 0 Nov  6 07:52 /var/snap/docker/common/var-lib-docker/volumes/cardano-ipc/_data/node.socket
 + mkdir -p /home/lawrence/src/traceability-smart-contract/work
 + mkdir -p /home/lawrence/src/traceability-smart-contract/work-backup
-+ rm -f /home/lawrence/src/traceability-smart-contract/work/add-ada-tx-alonzo.body /home/lawrence/src/traceability-smart-contract/work/add-ada-tx-alonzo.tx /home/lawrence/src/traceability-smart-contract/work/admin-utxo-collateral-valid.json /home/lawrence/src/traceability-smart-contract/work/admin-utxo-valid.json /home/lawrence/src/traceability-smart-contract/work/admin-utxo.json /home/lawrence/src/traceability-smart-contract/work/pparms.json /home/lawrence/src/traceability-smart-contract/work/refund-utxo.json /home/lawrence/src/traceability-smart-contract/work/validator-utxo.json
++ rm -f /home/lawrence/src/traceability-smart-contract/work/admin-utxo-collateral-valid.json /home/lawrence/src/traceability-smart-contract/work/admin-utxo-valid.json /home/lawrence/src/traceability-smart-contract/work/admin-utxo.json /home/lawrence/src/traceability-smart-contract/work/init-tx-alonzo.body /home/lawrence/src/traceability-smart-contract/work/init-tx-alonzo.tx /home/lawrence/src/traceability-smart-contract/work/pparms.json
 + rm -f '/home/lawrence/src/traceability-smart-contract/work-backup/*'
 + /usr/local/bin/cardano-cli query protocol-parameters --testnet-magic 1 --out-file /home/lawrence/src/traceability-smart-contract/work/pparms.json
 + validator_script=/home/lawrence/src/traceability-smart-contract/scripts/cardano-cli/preprod/data/earthtrust-validator.plutus
 ++ /usr/local/bin/cardano-cli address build --payment-script-file /home/lawrence/src/traceability-smart-contract/scripts/cardano-cli/preprod/data/earthtrust-validator.plutus --testnet-magic 1
-+ validator_script_addr=addr_test1wzetwau034znxxqlfdqph57w96dznktf8v86a8w4263lfnqph0y2k
++ validator_script_addr=addr_test1wp98u3s8wjrfxpjlerzlw2wg9a6k5ws8cc25gadtcxfe7xs6g8lm9
 + redeemer_file_path=/home/lawrence/src/traceability-smart-contract/scripts/cardano-cli/preprod/data/redeemer-earthtrust-spend.json
 ++ cat /home/lawrence/.local/keys/testnet/admin/admin.hash
 + admin_pkh=b9abcf6867519e28042048aa11207214a52e6d5d3288b752d1c27682
@@ -78,20 +80,20 @@ srwxrwxrwx 1 root root 0 Nov  6 07:52 /var/snap/docker/common/var-lib-docker/vol
 + cat /home/lawrence/src/traceability-smart-contract/work/admin-utxo.json
 + jq -r 'to_entries[] | select(.value.value.lovelace > 5000000 ) | .key'
 + readarray admin_utxo_valid_array
-++ echo 4d335420e036ec2bad24e50195e983c40da36cc70391eb2f2b18dd56c1ead9fb#0
+++ echo b29ef55ae27c5e5942a18ed5545b461c84610bab66bd59b18d37e712fe67cb18#0
 ++ tr -d '\n'
-+ admin_utxo_in=4d335420e036ec2bad24e50195e983c40da36cc70391eb2f2b18dd56c1ead9fb#0
++ admin_utxo_in=b29ef55ae27c5e5942a18ed5545b461c84610bab66bd59b18d37e712fe67cb18#0
 + cat /home/lawrence/src/traceability-smart-contract/work/admin-utxo.json
 + jq -r 'to_entries[] | select(.value.value.lovelace == 5000000 ) | .key'
 + readarray admin_utxo_valid_array
 ++ echo 5052d9b69c914b61cefb7667d54b023de53e0b1368bf436aff1f141d0f675559#0
 ++ tr -d '\n'
 + admin_utxo_collateral_in=5052d9b69c914b61cefb7667d54b023de53e0b1368bf436aff1f141d0f675559#0
-+ /usr/local/bin/cardano-cli query utxo --address addr_test1wzetwau034znxxqlfdqph57w96dznktf8v86a8w4263lfnqph0y2k --testnet-magic 1 --out-file /home/lawrence/src/traceability-smart-contract/work/validator-utxo.json
++ /usr/local/bin/cardano-cli query utxo --address addr_test1wp98u3s8wjrfxpjlerzlw2wg9a6k5ws8cc25gadtcxfe7xs6g8lm9 --testnet-magic 1 --out-file /home/lawrence/src/traceability-smart-contract/work/validator-utxo.json
 ++ jq -r 'to_entries[] 
 | select(.value.inlineDatum 
 | length > 0) | .key' /home/lawrence/src/traceability-smart-contract/work/validator-utxo.json
-+ order_utxo_in=22147586a56e1b22230761a32e90c719d1e9d5a622a52593e3be1a82e8888832#0
++ order_utxo_in=f7c58a4d27ebc11f0f63ba632d568604d12c2a286de3927295ccb64412de0110#0
 ++ jq -r 'to_entries[] 
 | select(.value.inlineDatum 
 | length > 0) 
@@ -100,10 +102,10 @@ srwxrwxrwx 1 root root 0 Nov  6 07:52 /var/snap/docker/common/var-lib-docker/vol
   "constructor": 0,
   "fields": [
     {
-      "int": 99950000
+      "int": 101120000
     },
     {
-      "bytes": "34363532353534343533303537"
+      "bytes": "34363532383738303639383235"
     }
   ]
 }'
@@ -111,44 +113,44 @@ srwxrwxrwx 1 root root 0 Nov  6 07:52 /var/snap/docker/common/var-lib-docker/vol
   "constructor": 0,
   "fields": [
     {
-      "int": 99950000
+      "int": 101120000
     },
     {
-      "bytes": "34363532353534343533303537"
+      "bytes": "34363532383738303639383235"
     }
   ]
 }'
 ++ jq -r '.fields[0].int' /home/lawrence/src/traceability-smart-contract/work/datum-in.json
-+ order_ada=99950000
++ order_ada=101120000
 ++ jq -r '.fields[1].bytes' /home/lawrence/src/traceability-smart-contract/work/datum-in.json
-+ order_id=34363532353534343533303537
-++ echo -n 34363532353534343533303537=
++ order_id=34363532383738303639383235
+++ echo -n 34363532383738303639383235=
 ++ xxd -r -p
-+ order_id_non_hex=4652554453057
++ order_id_non_hex=4652878069825
 ++ jq -r '.fields[2].int' /home/lawrence/src/traceability-smart-contract/work/datum-in.json
 + service_fee=null
 + merchant_split=95
 + donor_split=5
-+ merchant_ada=94952500
-+ donor_ada=4997500
++ merchant_ada=96064000
++ donor_ada=5056000
 ++ date +%Y/%m/%d-%H:%M:%S
-+ now=2022/11/06-10:25:19
++ now=2022/11/06-14:42:17
 + metadata='{
 "1" : {
     "order_detail" : {
-        "date" : "2022/11/06-10:25:19",
-        "donation_ada_amount" : "4997500",
+        "date" : "2022/11/06-14:42:17",
+        "donation_ada_amount" : "5056000",
         "donation_split" : "5%",
-        "order_id" : "4652554453057",
-        "order_ada_amount" : "99950000",
+        "order_id" : "4652878069825",
+        "order_ada_amount" : "101120000",
         "version" : "1.0"
         }
     }
 }'
-+ echo '{' '"1"' : '{' '"order_detail"' : '{' '"date"' : '"2022/11/06-10:25:19",' '"donation_ada_amount"' : '"4997500",' '"donation_split"' : '"5%",' '"order_id"' : '"4652554453057",' '"order_ada_amount"' : '"99950000",' '"version"' : '"1.0"' '}' '}' '}'
++ echo '{' '"1"' : '{' '"order_detail"' : '{' '"date"' : '"2022/11/06-14:42:17",' '"donation_ada_amount"' : '"5056000",' '"donation_split"' : '"5%",' '"order_id"' : '"4652878069825",' '"order_ada_amount"' : '"101120000",' '"version"' : '"1.0"' '}' '}' '}'
 + metadata_file_path=/home/lawrence/src/traceability-smart-contract/scripts/cardano-cli/preprod/data/earthtrust-metadata.json
-+ /usr/local/bin/cardano-cli transaction build --babbage-era --cardano-mode --testnet-magic 1 --change-address addr_test1vzu6hnmgvageu2qyypy25yfqwg222tndt5eg3d6j68p8dqspgdxn7 --tx-in-collateral 5052d9b69c914b61cefb7667d54b023de53e0b1368bf436aff1f141d0f675559#0 --tx-in 4d335420e036ec2bad24e50195e983c40da36cc70391eb2f2b18dd56c1ead9fb#0 --tx-in 22147586a56e1b22230761a32e90c719d1e9d5a622a52593e3be1a82e8888832#0 --spending-tx-in-reference 087e8cfaeaee4d5eb0cc90187229a899d68ca282b9dd2eea61612b00c0c0a522#1 --spending-plutus-script-v2 --spending-reference-tx-in-inline-datum-present --spending-reference-tx-in-redeemer-file /home/lawrence/src/traceability-smart-contract/scripts/cardano-cli/preprod/data/redeemer-earthtrust-spend.json --tx-out addr_test1vq7k907l7e59t52skm8e0ezsnmmc7h4xy30kg2klwc5n8rqug2pds+94952500 --tx-out addr_test1vzetpfww4aaunft0ucvcrxugj8nt4lhltsktya0rx0uh48cqghjfg+4997500 --required-signer-hash b9abcf6867519e28042048aa11207214a52e6d5d3288b752d1c27682 --protocol-params-file /home/lawrence/src/traceability-smart-contract/work/pparms.json --metadata-json-file /home/lawrence/src/traceability-smart-contract/scripts/cardano-cli/preprod/data/earthtrust-metadata.json --out-file /home/lawrence/src/traceability-smart-contract/work/add-ada-tx-alonzo.body
-Estimated transaction fee: Lovelace 313643
++ /usr/local/bin/cardano-cli transaction build --babbage-era --cardano-mode --testnet-magic 1 --change-address addr_test1vzu6hnmgvageu2qyypy25yfqwg222tndt5eg3d6j68p8dqspgdxn7 --tx-in-collateral 5052d9b69c914b61cefb7667d54b023de53e0b1368bf436aff1f141d0f675559#0 --tx-in b29ef55ae27c5e5942a18ed5545b461c84610bab66bd59b18d37e712fe67cb18#0 --tx-in f7c58a4d27ebc11f0f63ba632d568604d12c2a286de3927295ccb64412de0110#0 --spending-tx-in-reference b29ef55ae27c5e5942a18ed5545b461c84610bab66bd59b18d37e712fe67cb18#1 --spending-plutus-script-v2 --spending-reference-tx-in-inline-datum-present --spending-reference-tx-in-redeemer-file /home/lawrence/src/traceability-smart-contract/scripts/cardano-cli/preprod/data/redeemer-earthtrust-spend.json --tx-out addr_test1vq7k907l7e59t52skm8e0ezsnmmc7h4xy30kg2klwc5n8rqug2pds+96064000 --tx-out addr_test1vzetpfww4aaunft0ucvcrxugj8nt4lhltsktya0rx0uh48cqghjfg+5056000 --required-signer-hash b9abcf6867519e28042048aa11207214a52e6d5d3288b752d1c27682 --protocol-params-file /home/lawrence/src/traceability-smart-contract/work/pparms.json --metadata-json-file /home/lawrence/src/traceability-smart-contract/scripts/cardano-cli/preprod/data/earthtrust-metadata.json --out-file /home/lawrence/src/traceability-smart-contract/work/add-ada-tx-alonzo.body
+Estimated transaction fee: Lovelace 328270
 + echo 'tx has been built'
 tx has been built
 + /usr/local/bin/cardano-cli transaction sign --tx-body-file /home/lawrence/src/traceability-smart-contract/work/add-ada-tx-alonzo.body --testnet-magic 1 --signing-key-file /home/lawrence/.local/keys/testnet/admin/admin.skey --out-file /home/lawrence/src/traceability-smart-contract/work/add-ada-tx-alonzo.tx
@@ -160,13 +162,10 @@ Submit the tx with plutus script and wait 5 seconds...
 Transaction successfully submitted.
 
 
-
-[nix-shell:~/src/traceability-smart-contract]$ cardano-cli query utxo --address addr_test1wzetwau034znxxqlfdqph57w96dznktf8v86a8w4263lfnqph0y2k --cardano-mode --testnet-magic 1
+[nix-shell:~/src/traceability-smart-contract]$ cardano-cli query utxo --address addr_test1wp98u3s8wjrfxpjlerzlw2wg9a6k5ws8cc25gadtcxfe7xs6g8lm9 --cardano-mode --testnet-magic 1
                            TxHash                                 TxIx        Amount
 --------------------------------------------------------------------------------------
-087e8cfaeaee4d5eb0cc90187229a899d68ca282b9dd2eea61612b00c0c0a522     1        20000000 lovelace + TxOutDatumNone
-
-
+b29ef55ae27c5e5942a18ed5545b461c84610bab66bd59b18d37e712fe67cb18     1        20000000 lovelace + TxOutDatumNone
 
 
 
@@ -175,15 +174,16 @@ Transaction successfully submitted.
 ########################################  REFUND TEST CASE #########################################
 ####################################################################################################
 
-[nix-shell:~/src/traceability-smart-contract]$ cardano-cli query utxo --address addr_test1wzetwau034znxxqlfdqph57w96dznktf8v86a8w4263lfnqph0y2k --cardano-mode --testnet-magic 1
+
+[nix-shell:~/src/traceability-smart-contract/scripts/cardano-cli]$ cardano-cli query utxo --address addr_test1wp98u3s8wjrfxpjlerzlw2wg9a6k5ws8cc25gadtcxfe7xs6g8lm9 --cardano-mode --testnet-magic 1
                            TxHash                                 TxIx        Amount
 --------------------------------------------------------------------------------------
-087e8cfaeaee4d5eb0cc90187229a899d68ca282b9dd2eea61612b00c0c0a522     1        20000000 lovelace + TxOutDatumNone
-55871307213149c6a21211e0cd5fbcbc69dcceea24ac6da65eb94cff2296ae2f     0        100500000 lovelace + TxOutDatumInline ReferenceTxInsScriptsInlineDatumsInBabbageEra (ScriptDataConstructor 0 [ScriptDataNumber 100000000,ScriptDataBytes "4645447630913"])
+1c335fe9e3912f5b6b3a0245d9cc756fe883fdf6cd69e2d5fec141199eea35f0     0        101760000 lovelace + TxOutDatumInline ReferenceTxInsScriptsInlineDatumsInBabbageEra (ScriptDataConstructor 0 [ScriptDataNumber 101260000,ScriptDataBytes "4652915064897"])
+b29ef55ae27c5e5942a18ed5545b461c84610bab66bd59b18d37e712fe67cb18     1        20000000 lovelace + TxOutDatumNone
 
 
 
-lawrence@lawrence-MacBookAir:~/src/traceability-smart-contract/scripts/cardano-cli$ ./refund-tx.sh preprod 55871307213149c6a21211e0cd5fbcbc69dcceea24ac6da65eb94cff2296ae2f 0 100000000
+lawrence@lawrence-MacBookAir:~/src/traceability-smart-contract/scripts/cardano-cli$ ./refund-tx.sh preprod 1c335fe9e3912f5b6b3a0245d9cc756fe883fdf6cd69e2d5fec141199eea35f0 0
 + '[' -z preprod ']'
 + ENV=preprod
 +++ readlink -f ./refund-tx.sh
@@ -220,8 +220,10 @@ lawrence@lawrence-MacBookAir:~/src/traceability-smart-contract/scripts/cardano-c
 ++ MERCHANT_ADDR=addr_test1vq7k907l7e59t52skm8e0ezsnmmc7h4xy30kg2klwc5n8rqug2pds
 ++ export DONOR_ADDR=addr_test1vzetpfww4aaunft0ucvcrxugj8nt4lhltsktya0rx0uh48cqghjfg
 ++ DONOR_ADDR=addr_test1vzetpfww4aaunft0ucvcrxugj8nt4lhltsktya0rx0uh48cqghjfg
-++ export VAL_REF_SCRIPT=087e8cfaeaee4d5eb0cc90187229a899d68ca282b9dd2eea61612b00c0c0a522#1
-++ VAL_REF_SCRIPT=087e8cfaeaee4d5eb0cc90187229a899d68ca282b9dd2eea61612b00c0c0a522#1
+++ export REFUND_ADDR=addr_test1vzs24vjh8salzqt5pahgvr34ewfwagxaxr5pz7eswugzn2gmw4f5w
+++ REFUND_ADDR=addr_test1vzs24vjh8salzqt5pahgvr34ewfwagxaxr5pz7eswugzn2gmw4f5w
+++ export VAL_REF_SCRIPT=b29ef55ae27c5e5942a18ed5545b461c84610bab66bd59b18d37e712fe67cb18#1
+++ VAL_REF_SCRIPT=b29ef55ae27c5e5942a18ed5545b461c84610bab66bd59b18d37e712fe67cb18#1
 ++ export SPLIT=95
 ++ SPLIT=95
 ++ export BLOCKFROST_API_KEY=preprodxg6GaNVZoHWUfQd7HQcgUg8epWhE1aMi
@@ -236,15 +238,14 @@ Socket path: /var/snap/docker/common/var-lib-docker/volumes/cardano-ipc/_data/no
 srwxrwxrwx 1 root root 0 Nov  6 07:52 /var/snap/docker/common/var-lib-docker/volumes/cardano-ipc/_data/node.socket
 + mkdir -p /home/lawrence/src/traceability-smart-contract/work
 + mkdir -p /home/lawrence/src/traceability-smart-contract/work-backup
-+ rm -f /home/lawrence/src/traceability-smart-contract/work/add-ada-tx-alonzo.body /home/lawrence/src/traceability-smart-contract/work/add-ada-tx-alonzo.tx /home/lawrence/src/traceability-smart-contract/work/admin-utxo-collateral-valid.json /home/lawrence/src/traceability-smart-contract/work/admin-utxo-valid.json /home/lawrence/src/traceability-smart-contract/work/admin-utxo.json /home/lawrence/src/traceability-smart-contract/work/pparms.json /home/lawrence/src/traceability-smart-contract/work/refund-utxo.json /home/lawrence/src/traceability-smart-contract/work/validator-utxo.json
++ rm -f /home/lawrence/src/traceability-smart-contract/work/add-ada-tx-alonzo.body /home/lawrence/src/traceability-smart-contract/work/add-ada-tx-alonzo.tx /home/lawrence/src/traceability-smart-contract/work/admin-utxo-collateral-valid.json /home/lawrence/src/traceability-smart-contract/work/admin-utxo-valid.json /home/lawrence/src/traceability-smart-contract/work/admin-utxo.json /home/lawrence/src/traceability-smart-contract/work/pparms.json
 + rm -f '/home/lawrence/src/traceability-smart-contract/work-backup/*'
-+ order_utxo_in=55871307213149c6a21211e0cd5fbcbc69dcceea24ac6da65eb94cff2296ae2f
-+ order_utxo_in_txid=55871307213149c6a21211e0cd5fbcbc69dcceea24ac6da65eb94cff2296ae2f#0
-+ refund_amount=100000000
++ order_utxo_in=1c335fe9e3912f5b6b3a0245d9cc756fe883fdf6cd69e2d5fec141199eea35f0
++ order_utxo_in_txid=1c335fe9e3912f5b6b3a0245d9cc756fe883fdf6cd69e2d5fec141199eea35f0#0
 + /usr/local/bin/cardano-cli query protocol-parameters --testnet-magic 1 --out-file /home/lawrence/src/traceability-smart-contract/work/pparms.json
 + validator_script=/home/lawrence/src/traceability-smart-contract/scripts/cardano-cli/preprod/data/earthtrust-validator.plutus
 ++ /usr/local/bin/cardano-cli address build --payment-script-file /home/lawrence/src/traceability-smart-contract/scripts/cardano-cli/preprod/data/earthtrust-validator.plutus --testnet-magic 1
-+ validator_script_addr=addr_test1wzetwau034znxxqlfdqph57w96dznktf8v86a8w4263lfnqph0y2k
++ validator_script_addr=addr_test1wp98u3s8wjrfxpjlerzlw2wg9a6k5ws8cc25gadtcxfe7xs6g8lm9
 + redeemer_file_path=/home/lawrence/src/traceability-smart-contract/scripts/cardano-cli/preprod/data/redeemer-earthtrust-refund.json
 ++ cat /home/lawrence/.local/keys/testnet/admin/admin.hash
 + admin_pkh=b9abcf6867519e28042048aa11207214a52e6d5d3288b752d1c27682
@@ -254,24 +255,69 @@ srwxrwxrwx 1 root root 0 Nov  6 07:52 /var/snap/docker/common/var-lib-docker/vol
 + cat /home/lawrence/src/traceability-smart-contract/work/admin-utxo.json
 + jq -r 'to_entries[] | select(.value.value.lovelace > 5000000 ) | .key'
 + readarray admin_utxo_valid_array
-++ echo 087e8cfaeaee4d5eb0cc90187229a899d68ca282b9dd2eea61612b00c0c0a522#0
+++ echo 77228cd2d2f7b545f19f9292c3978bff931a8ff920978781e58b258277719242#0
 ++ tr -d '\n'
-+ admin_utxo_in=087e8cfaeaee4d5eb0cc90187229a899d68ca282b9dd2eea61612b00c0c0a522#0
++ admin_utxo_in=77228cd2d2f7b545f19f9292c3978bff931a8ff920978781e58b258277719242#0
 + cat /home/lawrence/src/traceability-smart-contract/work/admin-utxo.json
 + jq -r 'to_entries[] | select(.value.value.lovelace == 5000000 ) | .key'
 + readarray admin_utxo_valid_array
 ++ echo 5052d9b69c914b61cefb7667d54b023de53e0b1368bf436aff1f141d0f675559#0
 ++ tr -d '\n'
 + admin_utxo_collateral_in=5052d9b69c914b61cefb7667d54b023de53e0b1368bf436aff1f141d0f675559#0
-+ /usr/local/bin/cardano-cli query utxo --address addr_test1wzetwau034znxxqlfdqph57w96dznktf8v86a8w4263lfnqph0y2k --testnet-magic 1 --out-file /home/lawrence/src/traceability-smart-contract/work/validator-utxo.json
-+ curl -H 'project_id: preprodxg6GaNVZoHWUfQd7HQcgUg8epWhE1aMi ' https://cardano-preprod.blockfrost.io/api/v0/txs/55871307213149c6a21211e0cd5fbcbc69dcceea24ac6da65eb94cff2296ae2f/utxos
-  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-                                 Dload  Upload   Total   Spent    Left  Speed
-100  1467  100  1467    0     0   8890      0 --:--:-- --:--:-- --:--:--  8890
-++ jq -r '.inputs[0].address' /home/lawrence/src/traceability-smart-contract/work/refund-utxo.json
-+ refund_addr=addr_test1qp5mqfukl7qwlsvuvfmexhrc93gkgctfx67styulhyrst2jr89k3ktt4gsq9rg8fmjspum5r2682scfkn4pjme4zsvfq9hlece
-+ /usr/local/bin/cardano-cli transaction build --babbage-era --cardano-mode --testnet-magic 1 --change-address addr_test1vzu6hnmgvageu2qyypy25yfqwg222tndt5eg3d6j68p8dqspgdxn7 --tx-in-collateral 5052d9b69c914b61cefb7667d54b023de53e0b1368bf436aff1f141d0f675559#0 --tx-in 087e8cfaeaee4d5eb0cc90187229a899d68ca282b9dd2eea61612b00c0c0a522#0 --tx-in 55871307213149c6a21211e0cd5fbcbc69dcceea24ac6da65eb94cff2296ae2f#0 --spending-tx-in-reference 087e8cfaeaee4d5eb0cc90187229a899d68ca282b9dd2eea61612b00c0c0a522#1 --spending-plutus-script-v2 --spending-reference-tx-in-inline-datum-present --spending-reference-tx-in-redeemer-file /home/lawrence/src/traceability-smart-contract/scripts/cardano-cli/preprod/data/redeemer-earthtrust-refund.json --tx-out addr_test1qp5mqfukl7qwlsvuvfmexhrc93gkgctfx67styulhyrst2jr89k3ktt4gsq9rg8fmjspum5r2682scfkn4pjme4zsvfq9hlece+100000000 --required-signer-hash b9abcf6867519e28042048aa11207214a52e6d5d3288b752d1c27682 --protocol-params-file /home/lawrence/src/traceability-smart-contract/work/pparms.json --out-file /home/lawrence/src/traceability-smart-contract/work/add-ada-tx-alonzo.body
-Estimated transaction fee: Lovelace 306294
++ /usr/local/bin/cardano-cli query utxo --address addr_test1wp98u3s8wjrfxpjlerzlw2wg9a6k5ws8cc25gadtcxfe7xs6g8lm9 --testnet-magic 1 --out-file /home/lawrence/src/traceability-smart-contract/work/validator-utxo.json
+++ jq -r 'to_entries[] 
+| select(.value.inlineDatum 
+| length > 0) | .key' /home/lawrence/src/traceability-smart-contract/work/validator-utxo.json
++ order_utxo_in=1c335fe9e3912f5b6b3a0245d9cc756fe883fdf6cd69e2d5fec141199eea35f0#0
+++ jq -r 'to_entries[] 
+| select(.value.inlineDatum 
+| length > 0) 
+| .value.inlineDatum' /home/lawrence/src/traceability-smart-contract/work/validator-utxo.json
++ order_datum_in='{
+  "constructor": 0,
+  "fields": [
+    {
+      "int": 101260000
+    },
+    {
+      "bytes": "34363532393135303634383937"
+    }
+  ]
+}'
++ echo -n '{
+  "constructor": 0,
+  "fields": [
+    {
+      "int": 101260000
+    },
+    {
+      "bytes": "34363532393135303634383937"
+    }
+  ]
+}'
+++ jq -r '.fields[0].int' /home/lawrence/src/traceability-smart-contract/work/datum-in.json
++ order_ada=101260000
+++ jq -r '.fields[1].bytes' /home/lawrence/src/traceability-smart-contract/work/datum-in.json
++ order_id=34363532393135303634383937
+++ echo -n 34363532393135303634383937=
+++ xxd -r -p
++ order_id_non_hex=4652915064897
+++ date +%Y/%m/%d-%H:%M:%S
++ now=2022/11/06-15:10:26
++ metadata='{
+"1" : {
+    "refund_detail" : {
+        "date" : "2022/11/06-15:10:26",
+        "order_id" : "4652915064897",
+        "refund_ada_amount" : "101260000",
+        "version" : "1.0"
+        }
+    }
+}'
++ echo '{' '"1"' : '{' '"refund_detail"' : '{' '"date"' : '"2022/11/06-15:10:26",' '"order_id"' : '"4652915064897",' '"refund_ada_amount"' : '"101260000",' '"version"' : '"1.0"' '}' '}' '}'
++ metadata_file_path=/home/lawrence/src/traceability-smart-contract/scripts/cardano-cli/preprod/data/earthtrust-refund-metadata.json
++ /usr/local/bin/cardano-cli transaction build --babbage-era --cardano-mode --testnet-magic 1 --change-address addr_test1vzu6hnmgvageu2qyypy25yfqwg222tndt5eg3d6j68p8dqspgdxn7 --tx-in-collateral 5052d9b69c914b61cefb7667d54b023de53e0b1368bf436aff1f141d0f675559#0 --tx-in 77228cd2d2f7b545f19f9292c3978bff931a8ff920978781e58b258277719242#0 --tx-in 1c335fe9e3912f5b6b3a0245d9cc756fe883fdf6cd69e2d5fec141199eea35f0#0 --spending-tx-in-reference b29ef55ae27c5e5942a18ed5545b461c84610bab66bd59b18d37e712fe67cb18#1 --spending-plutus-script-v2 --spending-reference-tx-in-inline-datum-present --spending-reference-tx-in-redeemer-file /home/lawrence/src/traceability-smart-contract/scripts/cardano-cli/preprod/data/redeemer-earthtrust-refund.json --tx-out addr_test1vzs24vjh8salzqt5pahgvr34ewfwagxaxr5pz7eswugzn2gmw4f5w+101260000 --required-signer-hash b9abcf6867519e28042048aa11207214a52e6d5d3288b752d1c27682 --protocol-params-file /home/lawrence/src/traceability-smart-contract/work/pparms.json --metadata-json-file /home/lawrence/src/traceability-smart-contract/scripts/cardano-cli/preprod/data/earthtrust-refund-metadata.json --out-file /home/lawrence/src/traceability-smart-contract/work/add-ada-tx-alonzo.body
+Estimated transaction fee: Lovelace 285613
 + echo 'tx has been built'
 tx has been built
 + /usr/local/bin/cardano-cli transaction sign --tx-body-file /home/lawrence/src/traceability-smart-contract/work/add-ada-tx-alonzo.body --testnet-magic 1 --signing-key-file /home/lawrence/.local/keys/testnet/admin/admin.skey --out-file /home/lawrence/src/traceability-smart-contract/work/add-ada-tx-alonzo.tx
@@ -283,12 +329,11 @@ Submit the tx with plutus script and wait 5 seconds...
 Transaction successfully submitted.
 
 
-[nix-shell:~/src/traceability-smart-contract]$ cardano-cli query utxo --address addr_test1wzetwau034znxxqlfdqph57w96dznktf8v86a8w4263lfnqph0y2k --cardano-mode --testnet-magic 1
+
+[nix-shell:~/src/traceability-smart-contract/scripts/cardano-cli]$ cardano-cli query utxo --address addr_test1wp98u3s8wjrfxpjlerzlw2wg9a6k5ws8cc25gadtcxfe7xs6g8lm9 --cardano-mode --testnet-magic 1
                            TxHash                                 TxIx        Amount
 --------------------------------------------------------------------------------------
-087e8cfaeaee4d5eb0cc90187229a899d68ca282b9dd2eea61612b00c0c0a522     1        20000000 lovelace + TxOutDatumNone
-
-
+b29ef55ae27c5e5942a18ed5545b461c84610bab66bd59b18d37e712fe67cb18     1        20000000 lovelace + TxOutDatumNone
 
 
 
