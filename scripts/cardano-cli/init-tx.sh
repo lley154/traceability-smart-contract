@@ -57,6 +57,7 @@ $CARDANO_CLI query protocol-parameters $network --out-file $WORK/pparms.json
 # load in local variable values
 validator_script="$BASE/scripts/cardano-cli/$ENV/data/earthtrust-validator.plutus"
 validator_script_addr=$($CARDANO_CLI address build --payment-script-file "$validator_script" $network)
+echo $validator_script_addr > $BASE/scripts/cardano-cli/$ENV/data/earthtrust-validator.addr
 admin_pkh=$(cat $ADMIN_PKH)
 
 echo "starting traceability init script"

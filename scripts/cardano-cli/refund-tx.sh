@@ -12,7 +12,7 @@ set -x
 if [ -z $1 ]; 
 then
     echo "refund-tx.sh:  Invalid script arguments"
-    echo "Usage: refund-tx.sh [devnet|preview|preprod|mainnet]"
+    echo "Usage: refund-tx.sh [devnet|preview|preprod|mainnet] txHash txIndx lovelaceAmount"
     exit 1
 fi
 ENV=$1
@@ -38,6 +38,19 @@ rm -f $WORK/*
 rm -f $WORK-backup/*
 
 
+##################################################################
+#  Set the refund utxo and amount to refund - START
+##################################################################
+# Specify the utxo at the smart contract address we want to refund
+order_utxo_in=$2
+order_utxo_in_txid=$order_utxo_in#$3
+
+# Sepcify the amount of the refund
+refund_amount=$4
+##################################################################
+#  Set the refund utxo and amount to refund - END
+##################################################################
+
 # generate values from cardano-cli tool
 $CARDANO_CLI query protocol-parameters $network --out-file $WORK/pparms.json
 
@@ -47,10 +60,6 @@ validator_script_addr=$($CARDANO_CLI address build --payment-script-file "$valid
 redeemer_file_path="$BASE/scripts/cardano-cli/$ENV/data/redeemer-earthtrust-refund.json"
 admin_pkh=$(cat $ADMIN_PKH)
 
-
-################################################################
-# Refund the earthtrust UTXO
-################################################################
 
 # Step 1: Get UTXOs from admin
 # There needs to be at least 2 utxos that can be consumed; one for spending of the token
@@ -71,33 +80,8 @@ admin_utxo_collateral_in=$(echo $admin_utxo_valid_array | tr -d '\n')
 # Step 2: Get the earthtrust smart contract utxos
 $CARDANO_CLI query utxo --address $validator_script_addr $network --out-file $WORK/validator-utxo.json
 
-# Specify the utxo at the smart contract address we want to refund
-order_utxo_in="3408fce3b102cea3fcca34085afd5735a51b856ff3840ad6185c59b8284916ec#0"
-
-# Sepcify the amount of the refund
-refund_amount=101130000
-
-
-order_datum_in=$(jq -r 'to_entries[] 
-| select (.key == "'$order_utxo_in'") 
-| .value.inlineDatum' $WORK/validator-utxo.json)
-
-
-echo -n "$order_datum_in" > $WORK/datum-in.json
-
-# get the refund address
-refund_pkh=$(jq -r '.fields[3].bytes' $WORK/datum-in.json)
-
-echo -n $refund_pkh > $WORK/refund.vkey
-
-refund_addr=$($CARDANO_CLI address build $network --payment-verification-key-file $WORK/refund.vkey)
-
-
-# Upate the redeemer with the amount of add being added
-cat $redeemer_file_path | \
-jq -c '
-  .fields[0].int          |= '$refund_amount'' > $WORK/redeemer-earthtrust-refund.json 
-
+curl -H "project_id: $BLOCKFROST_API_KEY " "$BLOCKFROST_API/txs/$order_utxo_in/utxos" > $WORK/refund-utxo.json
+refund_addr=$(jq -r '.inputs[0].address' $WORK/refund-utxo.json)
 
 
 # Step 3: Build and submit the transaction
@@ -108,7 +92,7 @@ $CARDANO_CLI transaction build \
   --change-address "$admin_utxo_addr" \
   --tx-in-collateral "$admin_utxo_collateral_in" \
   --tx-in "$admin_utxo_in" \
-  --tx-in "$order_utxo_in" \
+  --tx-in "$order_utxo_in_txid" \
   --spending-tx-in-reference "$VAL_REF_SCRIPT" \
   --spending-plutus-script-v2 \
   --spending-reference-tx-in-inline-datum-present \
@@ -128,6 +112,6 @@ $CARDANO_CLI transaction sign \
 
 echo "tx has been signed"
 
-#echo "Submit the tx with plutus script and wait 5 seconds..."
-#$CARDANO_CLI transaction submit --tx-file $WORK/add-ada-tx-alonzo.tx $network
+echo "Submit the tx with plutus script and wait 5 seconds..."
+$CARDANO_CLI transaction submit --tx-file $WORK/add-ada-tx-alonzo.tx $network
 
