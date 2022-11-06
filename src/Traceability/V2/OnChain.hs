@@ -42,8 +42,7 @@ import           Traceability.V2.Types                          (ETRedeemer(..),
 -- On Chain Code
 ------------------------------------------------------------------------
 
--- | ETDatum is used to record the total amount of the order, the order id,
---   the service fee and the refund address if required.
+-- | ETDatum is used to record the total amount of the order and the order id
 data ETDatum = ETDatum
     {   etdOrderAmount      :: Integer 
     ,   etdOrderId          :: BuiltinByteString                                                                                                          
@@ -52,7 +51,7 @@ data ETDatum = ETDatum
 PlutusTx.makeIsDataIndexed ''ETDatum [('ETDatum, 0)]
 PlutusTx.makeLift ''ETDatum
 
-
+                                                      
 -- | Check that the value is there for the provided outputs
 {-# INLINABLE validOutput #-}
 validOutput :: Value.Value -> [ContextsV2.TxOut] -> Bool
@@ -71,8 +70,7 @@ validOutput' scriptAddr txVal (x:xs)
     | otherwise = validOutput' scriptAddr txVal xs
 
 
-
--- | Check to see if the buy token is in the list of inputs locked at an address
+-- | Check to see if the value is part of the input
 {-# INLINABLE validInput #-}
 validInput :: Value.Value -> [ContextsV2.TxInInfo] -> Bool
 validInput _ [] = False
@@ -81,18 +79,18 @@ validInput txVal (x:xs)
     | otherwise = validInput txVal xs
 
 
-
--- | mkETValidator is the minting policy is for creating an Earthtrust order token when
---   an order is submitted.
+-- | mkETValidator is the validator that confirms if it is ok to spend the Ada locked
+--   at the earthtrust smart contract.   All of the business rules must be satisfied in
+--   order to spend the transaction.
 {-# INLINABLE mkETValidator #-}
 mkETValidator :: ETValidatorParams -> ETDatum -> ETRedeemer -> ContextsV2.ScriptContext -> Bool
 mkETValidator params dat red ctx = 
     case red of
-        Spend -> traceIfFalse "ETV1" checkMerchantOutput 
+        Spend ->   traceIfFalse "ETV1" checkInput  
                 && traceIfFalse "ETV2" checkDonorOutput 
-                && traceIfFalse "ETV3" checkInput  
+                && traceIfFalse "ETV3" checkMerchantOutput 
                 && traceIfFalse "ETV4" signedByAdmin
-        Refund -> traceIfFalse "ETV5" checkInput
+        Refund ->  traceIfFalse "ETV5" checkInput
                 && traceIfFalse "ETV6" checkRefundOutput
                 && traceIfFalse "ETV7" signedByAdmin
                 
@@ -109,44 +107,52 @@ mkETValidator params dat red ctx =
         adaOrderAmount :: Integer
         adaOrderAmount = etdOrderAmount dat
 
-        merchantAddress :: Address.Address
-        merchantAddress = Address.pubKeyHashAddress (etvMerchantPkh params) Nothing
-
-        merchantAmount :: Value.Value
-        merchantAmount = Ada.lovelaceValueOf (divide (adaOrderAmount * split) 100)
-
-        donorAddress :: Address.Address
-        donorAddress = Address.pubKeyHashAddress (etvDonorPkh params) Nothing
-
-        donorAmount :: Value.Value
-        donorAmount = Ada.lovelaceValueOf (divide (adaOrderAmount * (100 - split)) 100)
-
         -- | Admin signature required to run the smart contract
         signedByAdmin :: Bool
         signedByAdmin =  ContextsV2.txSignedBy info $ Address.unPaymentPubKeyHash (etvAdminPkh params)
-
-        -- | Check that both the split amount value is correct and at the correct
-        --   address for the merchant     
-        checkMerchantOutput :: Bool
-        checkMerchantOutput = validOutput' merchantAddress merchantAmount (ContextsV2.txInfoOutputs info)
-
-        -- | Check that both the split amount value is correct and at the correct
-        --   address for the donor  
-        checkDonorOutput :: Bool
-        checkDonorOutput = validOutput' donorAddress donorAmount (ContextsV2.txInfoOutputs info)
 
         -- | Checks that the amount in the datum matches the actual amount in the input
         --   transaction
         checkInput :: Bool
         checkInput = validInput (Ada.lovelaceValueOf (adaOrderAmount + serviceFee)) (ContextsV2.txInfoInputs info)
 
+        -- | Check that both the split amount value is correct and at the correct
+        --   address for the merchant     
+        checkMerchantOutput :: Bool
+        checkMerchantOutput = validOutput' merchantAddress merchantAmount (ContextsV2.txInfoOutputs info)
+          where
+            merchantAmount :: Value.Value
+            merchantAmount = Ada.lovelaceValueOf (divide (adaOrderAmount * split) 100)
+
+            merchantAddress :: Address.Address
+            merchantAddress = Address.pubKeyHashAddress (etvMerchantPkh params) Nothing
+
+
+        -- | Check that both the split amount value is correct and at the correct
+        --   address for the donor  
+        checkDonorOutput :: Bool
+        checkDonorOutput = validOutput' donorAddress donorAmount (ContextsV2.txInfoOutputs info)
+          where
+            donorAmount :: Value.Value
+            donorAmount = Ada.lovelaceValueOf (divide (adaOrderAmount * (100 - split)) 100)
+            
+            donorAddress :: Address.Address
+            donorAddress = Address.pubKeyHashAddress (etvDonorPkh params) Nothing
+
+
         -- | Check that the refund output contains the correct ada amount 
         checkRefundOutput :: Bool
-        checkRefundOutput = validOutput (Ada.lovelaceValueOf adaOrderAmount) (ContextsV2.txInfoOutputs info)
+        checkRefundOutput = validOutput' refundAddress refundAmount (ContextsV2.txInfoOutputs info)
+          where
+            refundAmount :: Value.Value
+            refundAmount = Ada.lovelaceValueOf adaOrderAmount
+            
+            refundAddress :: Address.Address
+            refundAddress = Address.pubKeyHashAddress (etvRefundPkh params) Nothing
+            
 
-                
 
--- | Creating a wrapper around littercoin validator for 
+-- | Creating a wrapper around the validator for 
 --   performance improvements by not using a typed validator
 {-# INLINABLE wrapETValidator #-}
 wrapETValidator :: BuiltinData -> BuiltinData -> BuiltinData -> BuiltinData -> ()
@@ -162,7 +168,7 @@ untypedETValidator params = PlutusV2.mkValidatorScript $
     
 
 -- | We need a typedValidator for offchain mkTxConstraints, so 
--- created it using the untyped validator
+--   created it using the untyped validator
 typedETValidator :: BuiltinData -> PSU.V2.TypedValidator Typed.Any
 typedETValidator params =
   ValidatorsV2.unsafeMkTypedValidator $ untypedETValidator params

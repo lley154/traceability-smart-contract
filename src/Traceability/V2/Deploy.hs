@@ -35,28 +35,28 @@ import           Traceability.V2.OnChain
 
 
 -------------------------------------------------------------------------------------
--- START - traceability Minting Policy Parameters 
+-- START - traceability validator parameters 
 -------------------------------------------------------------------------------------
 -- These are dummy values and need to be replaced with real values for
 -- the appropriate enviornment (eg devnet, testnet or mainnet)
 -- **************** WARNING ************************
--- Any changes will require a new deployment of the nftMintingPolicy plutus script
+-- Any changes will require a new deployment of the ETValidator plutus script
 -- 1) cd to top level of project
 -- 2) nix-shell
 -- 3) cabal repl
 -- 4) Deploy> main
 -- 5) Deploy> q:
--- 6) Update app with a new nftMintingPolicy address and policy id
--- 7) cd scripts/cardano-cli/[preview|preprod|mainnet]/
--- 8) Update global-export-properties.sh with new Admin UTXO (and collateral)
--- 9) cd ..
--- 10) ./init-tx.sh [preview|preprod|mainnet]
--- 11) Wait for tx to be confirmed on the blockchain before proceeding
+-- 6) cd scripts/cardano-cli/[preview|preprod|mainnet]/
+-- 7) ./init-tx.sh [preview|preprod|mainnet]
+-- 8) Wait for tx to be confirmed on the blockchain before proceeding
+-- 9) update the next.js app with the new earthtrust validator address located here:
+--    scripts/cardano-cli/[preview|preprod|mainnet]/data/earthtrust-validator.addr
+
 -------------------------------------------------------------------------------------
 
 -- Version number
 version :: Integer
-version = 3
+version = 1
 
 -- Split of the order total amount between merchant and donor
 amountSplit :: Integer
@@ -79,8 +79,13 @@ adminPubKeyHashBS :: B.ByteString
 adminPubKeyHashBS = "b9abcf6867519e28042048aa11207214a52e6d5d3288b752d1c27682"
 
 
+-- Refund public key payment hash
+refundPubKeyHashBS :: B.ByteString
+refundPubKeyHashBS = "a0aab2573c3bf101740f6e860e35cb92eea0dd30e8117b30771029a9"
+
+
 -------------------------------------------------------------------------------------
--- END - traceability Minting Policy Parameters 
+-- END - traceability validator parameters 
 -------------------------------------------------------------------------------------
 
 
@@ -97,6 +102,10 @@ donorPaymentPkh = Address.PaymentPubKeyHash (PlutusV2.PubKeyHash $ decodeHex don
 adminPaymentPkh :: Address.PaymentPubKeyHash
 adminPaymentPkh = Address.PaymentPubKeyHash (PlutusV2.PubKeyHash $ decodeHex adminPubKeyHashBS)
 
+refundPaymentPkh :: Address.PaymentPubKeyHash
+refundPaymentPkh = Address.PaymentPubKeyHash (PlutusV2.PubKeyHash $ decodeHex refundPubKeyHashBS)
+
+
 etvParams :: ETValidatorParams
 etvParams = ETValidatorParams 
                 {
@@ -106,6 +115,7 @@ etvParams = ETValidatorParams
                 , etvMerchantPkh = merchantPaymentPkh
                 , etvDonorPkh = donorPaymentPkh
                 , etvAdminPkh = adminPaymentPkh
+                , etvRefundPkh = refundPaymentPkh
                 }
 
 -------------------------------------------------------------------------------------

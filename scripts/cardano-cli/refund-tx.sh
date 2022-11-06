@@ -12,7 +12,7 @@ set -x
 if [ -z $1 ]; 
 then
     echo "refund-tx.sh:  Invalid script arguments"
-    echo "Usage: refund-tx.sh [devnet|preview|preprod|mainnet] txHash txIndx lovelaceAmount"
+    echo "Usage: refund-tx.sh [devnet|preview|preprod|mainnet] txHash txIndx"
     exit 1
 fi
 ENV=$1
@@ -45,8 +45,6 @@ rm -f $WORK-backup/*
 order_utxo_in=$2
 order_utxo_in_txid=$order_utxo_in#$3
 
-# Sepcify the amount of the refund
-refund_amount=$4
 ##################################################################
 #  Set the refund utxo and amount to refund - END
 ##################################################################
@@ -80,8 +78,38 @@ admin_utxo_collateral_in=$(echo $admin_utxo_valid_array | tr -d '\n')
 # Step 2: Get the earthtrust smart contract utxos
 $CARDANO_CLI query utxo --address $validator_script_addr $network --out-file $WORK/validator-utxo.json
 
-curl -H "project_id: $BLOCKFROST_API_KEY " "$BLOCKFROST_API/txs/$order_utxo_in/utxos" > $WORK/refund-utxo.json
-refund_addr=$(jq -r '.inputs[0].address' $WORK/refund-utxo.json)
+order_utxo_in=$(jq -r 'to_entries[] 
+| select(.value.inlineDatum 
+| length > 0) | .key' $WORK/validator-utxo.json)
+
+order_datum_in=$(jq -r 'to_entries[] 
+| select(.value.inlineDatum 
+| length > 0) 
+| .value.inlineDatum' $WORK/validator-utxo.json)
+
+echo -n "$order_datum_in" > $WORK/datum-in.json
+
+
+# get the order details from the datum
+order_ada=$(jq -r '.fields[0].int' $WORK/datum-in.json)
+order_id=$(jq -r '.fields[1].bytes' $WORK/datum-in.json)
+order_id_non_hex=$(echo -n "$order_id=" | xxd -r -p)
+
+now=$(date '+%Y/%m/%d-%H:%M:%S')
+
+metadata="{
+\"1\" : {
+    \"refund_detail\" : {
+        \"date\" : \"$now\",
+        \"order_id\" : \"$order_id_non_hex\",
+        \"refund_ada_amount\" : \"$order_ada\",
+        \"version\" : \"1.0\"
+        }
+    }
+}"
+
+echo $metadata > $BASE/scripts/cardano-cli/$ENV/data/earthtrust-refund-metadata.json
+metadata_file_path="$BASE/scripts/cardano-cli/$ENV/data/earthtrust-refund-metadata.json"
 
 
 # Step 3: Build and submit the transaction
@@ -97,9 +125,10 @@ $CARDANO_CLI transaction build \
   --spending-plutus-script-v2 \
   --spending-reference-tx-in-inline-datum-present \
   --spending-reference-tx-in-redeemer-file "$redeemer_file_path" \
-  --tx-out "$refund_addr+$refund_amount" \
+  --tx-out "$REFUND_ADDR+$order_ada" \
   --required-signer-hash "$admin_pkh" \
   --protocol-params-file "$WORK/pparms.json" \
+  --metadata-json-file "$metadata_file_path" \
   --out-file $WORK/add-ada-tx-alonzo.body
 
 echo "tx has been built"

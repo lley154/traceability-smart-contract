@@ -111,8 +111,8 @@ metadata="{
     }
 }"
 
-echo $metadata > $BASE/scripts/cardano-cli/$ENV/data/earthtrust-metadata.json
-metadata_file_path="$BASE/scripts/cardano-cli/$ENV/data/earthtrust-metadata.json"
+echo $metadata > $BASE/scripts/cardano-cli/$ENV/data/earthtrust-spend-metadata.json
+metadata_file_path="$BASE/scripts/cardano-cli/$ENV/data/earthtrust-spend-metadata.json"
 
 
 
