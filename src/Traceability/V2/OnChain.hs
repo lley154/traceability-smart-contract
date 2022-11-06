@@ -45,22 +45,12 @@ import           Traceability.V2.Types                          (ETRedeemer(..),
 -- | ETDatum is used to record the total amount of the order, the order id,
 --   the service fee and the refund address if required.
 data ETDatum = ETDatum
-    {   etdAmount           :: Integer 
-    ,   etdOrderId          :: BuiltinByteString
-    ,   etdServiceFee       :: Integer
-    ,   etdRefundPkh        :: Address.PaymentPubKeyHash                                                                                                            
+    {   etdOrderAmount      :: Integer 
+    ,   etdOrderId          :: BuiltinByteString                                                                                                          
     } deriving (Show, Generic, FromJSON, ToJSON)
 
 PlutusTx.makeIsDataIndexed ''ETDatum [('ETDatum, 0)]
 PlutusTx.makeLift ''ETDatum
-                                                      
--- | Check that the value is locked at an address for the provided outputs
-{-# INLINABLE validOutputs #-}
-validOutputs :: Address.Address -> Value.Value -> [ContextsV2.TxOut] -> Bool
-validOutputs _ _ [] = False
-validOutputs scriptAddr txVal (x:xs)
-    | (ContextsV2.txOutAddress x == scriptAddr) && (ContextsV2.txOutValue x == txVal) = True
-    | otherwise = validOutputs scriptAddr txVal xs
 
 
 -- | Check that the value is there for the provided outputs
@@ -70,6 +60,16 @@ validOutput _ [] = False
 validOutput txVal (x:xs)
     | (ContextsV2.txOutValue x == txVal) = True
     | otherwise = validOutput txVal xs
+    
+                                                      
+-- | Check that the value is locked at an address for the provided outputs
+{-# INLINABLE validOutput' #-}
+validOutput' :: Address.Address -> Value.Value -> [ContextsV2.TxOut] -> Bool
+validOutput' _ _ [] = False
+validOutput' scriptAddr txVal (x:xs)
+    | (ContextsV2.txOutAddress x == scriptAddr) && (ContextsV2.txOutValue x == txVal) = True
+    | otherwise = validOutput' scriptAddr txVal xs
+
 
 
 -- | Check to see if the buy token is in the list of inputs locked at an address
@@ -79,6 +79,7 @@ validInput _ [] = False
 validInput txVal (x:xs)
     | validOutput txVal [ContextsV2.txInInfoResolved x] = True
     | otherwise = validInput txVal xs
+
 
 
 -- | mkETValidator is the minting policy is for creating an Earthtrust order token when
@@ -91,8 +92,8 @@ mkETValidator params dat red ctx =
                 && traceIfFalse "ETV2" checkDonorOutput 
                 && traceIfFalse "ETV3" checkInput  
                 && traceIfFalse "ETV4" signedByAdmin
-        Refund amt -> (traceIfFalse "ETV5" $ checkRefundOutput amt)
-                && (traceIfFalse "ETV6" $ checkRefundInput amt)
+        Refund -> traceIfFalse "ETV5" checkInput
+                && traceIfFalse "ETV6" checkRefundOutput
                 && traceIfFalse "ETV7" signedByAdmin
                 
     where
@@ -102,26 +103,23 @@ mkETValidator params dat red ctx =
         split :: Integer
         split = etvSplit params
 
-        adaAmount :: Integer
-        adaAmount = etdAmount dat
-
         serviceFee :: Integer
-        serviceFee = etdServiceFee dat
+        serviceFee = etvServiceFee params
+
+        adaOrderAmount :: Integer
+        adaOrderAmount = etdOrderAmount dat
 
         merchantAddress :: Address.Address
         merchantAddress = Address.pubKeyHashAddress (etvMerchantPkh params) Nothing
 
         merchantAmount :: Value.Value
-        merchantAmount = Ada.lovelaceValueOf (divide (adaAmount * split) 100)
+        merchantAmount = Ada.lovelaceValueOf (divide (adaOrderAmount * split) 100)
 
         donorAddress :: Address.Address
         donorAddress = Address.pubKeyHashAddress (etvDonorPkh params) Nothing
 
-        refundAddress :: Address.Address
-        refundAddress = Address.pubKeyHashAddress (etdRefundPkh dat) Nothing
-
         donorAmount :: Value.Value
-        donorAmount = Ada.lovelaceValueOf (divide (adaAmount * (100 - split)) 100)
+        donorAmount = Ada.lovelaceValueOf (divide (adaOrderAmount * (100 - split)) 100)
 
         -- | Admin signature required to run the smart contract
         signedByAdmin :: Bool
@@ -130,28 +128,23 @@ mkETValidator params dat red ctx =
         -- | Check that both the split amount value is correct and at the correct
         --   address for the merchant     
         checkMerchantOutput :: Bool
-        checkMerchantOutput = validOutputs merchantAddress merchantAmount (ContextsV2.txInfoOutputs info)
+        checkMerchantOutput = validOutput' merchantAddress merchantAmount (ContextsV2.txInfoOutputs info)
 
         -- | Check that both the split amount value is correct and at the correct
         --   address for the donor  
         checkDonorOutput :: Bool
-        checkDonorOutput = validOutputs donorAddress donorAmount (ContextsV2.txInfoOutputs info)
+        checkDonorOutput = validOutput' donorAddress donorAmount (ContextsV2.txInfoOutputs info)
 
         -- | Checks that the amount in the datum matches the actual amount in the input
         --   transaction
         checkInput :: Bool
-        checkInput = validInput (Ada.lovelaceValueOf (adaAmount + serviceFee)) (ContextsV2.txInfoInputs info)
+        checkInput = validInput (Ada.lovelaceValueOf (adaOrderAmount + serviceFee)) (ContextsV2.txInfoInputs info)
 
-        -- | Checks that the amount in the datum matches the actual amount in the input
-        --   transaction
-        checkRefundInput :: Integer -> Bool
-        checkRefundInput refundAmt = validInput (Ada.lovelaceValueOf (refundAmt + serviceFee)) (ContextsV2.txInfoInputs info)
+        -- | Check that the refund output contains the correct ada amount 
+        checkRefundOutput :: Bool
+        checkRefundOutput = validOutput (Ada.lovelaceValueOf adaOrderAmount) (ContextsV2.txInfoOutputs info)
 
-        -- | Check that the refund output contains the correct ada amount and
-        --   goes to the refund address
-        checkRefundOutput :: Integer -> Bool
-        checkRefundOutput refundAmt = validOutputs refundAddress (Ada.lovelaceValueOf refundAmt) (ContextsV2.txInfoOutputs info)
-
+                
 
 -- | Creating a wrapper around littercoin validator for 
 --   performance improvements by not using a typed validator

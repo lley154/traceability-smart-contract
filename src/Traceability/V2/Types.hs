@@ -23,6 +23,7 @@ data ETValidatorParams = ETValidatorParams
     { 
       etvVersion                 :: Integer  
     , etvSplit                   :: Integer
+    , etvServiceFee              :: Integer
     , etvMerchantPkh             :: Address.PaymentPubKeyHash
     , etvDonorPkh                :: Address.PaymentPubKeyHash
     , etvAdminPkh                :: Address.PaymentPubKeyHash
@@ -35,7 +36,7 @@ PlutusTx.makeLift ''ETValidatorParams
 --   the Ada locked at the smart contract
 data ETRedeemer = 
        Spend            -- spend earthtrust locked Ada and send to merchant and donor 
-     | Refund Integer   -- refund locked Ada to customer
+     | Refund           -- refund locked Ada to customer
 
     deriving Haskell.Show
 

@@ -56,11 +56,15 @@ import           Traceability.V2.OnChain
 
 -- Version number
 version :: Integer
-version = 2
+version = 3
 
 -- Split of the order total amount between merchant and donor
 amountSplit :: Integer
 amountSplit = 95   -- 95% goes to the merchant, 5% goes to the donor
+
+-- Service fee to cover tx costs
+serviceFee :: Integer
+serviceFee = 500000 
 
 -- Merchant Pkh
 merchantPubKeyHashBS :: B.ByteString
@@ -73,10 +77,6 @@ donorPubKeyHashBS = "b2b0a5ceaf7bc9a56fe619819b8891e6bafeff5c2cb275e333f97a9f"
 -- Admin public key payment hash
 adminPubKeyHashBS :: B.ByteString
 adminPubKeyHashBS = "b9abcf6867519e28042048aa11207214a52e6d5d3288b752d1c27682"
-
--- Admin public key payment hash
-buyerPubKeyHashBS :: B.ByteString
-buyerPubKeyHashBS = "290f5ab67005518d393ef65908ab0efd8a70b1225ce875de79c86852"
 
 
 -------------------------------------------------------------------------------------
@@ -97,15 +97,12 @@ donorPaymentPkh = Address.PaymentPubKeyHash (PlutusV2.PubKeyHash $ decodeHex don
 adminPaymentPkh :: Address.PaymentPubKeyHash
 adminPaymentPkh = Address.PaymentPubKeyHash (PlutusV2.PubKeyHash $ decodeHex adminPubKeyHashBS)
 
-buyerPaymentPkh :: Address.PaymentPubKeyHash
-buyerPaymentPkh = Address.PaymentPubKeyHash (PlutusV2.PubKeyHash $ decodeHex buyerPubKeyHashBS)
-
-
 etvParams :: ETValidatorParams
 etvParams = ETValidatorParams 
                 {
                   etvVersion = version
                 , etvSplit = amountSplit
+                , etvServiceFee = serviceFee
                 , etvMerchantPkh = merchantPaymentPkh
                 , etvDonorPkh = donorPaymentPkh
                 , etvAdminPkh = adminPaymentPkh
@@ -134,10 +131,8 @@ main = do
 writeDatum :: IO ()
 writeDatum = 
     let etDatum = ETDatum 
-            {   etdAmount = 100000000                                         
+            {   etdOrderAmount = 100000000                                         
             ,   etdOrderId = "123"
-            ,   etdServiceFee = 500000
-            ,   etdRefundPkh = buyerPaymentPkh
             }
         dat = PlutusTx.toBuiltinData etDatum
     in
@@ -152,7 +147,7 @@ writeRedeemerETSpend =
 
 writeRedeemerETRefund :: IO ()
 writeRedeemerETRefund = 
-    let red = PlutusV2.Redeemer $ PlutusTx.toBuiltinData $ Refund 100000000
+    let red = PlutusV2.Redeemer $ PlutusTx.toBuiltinData $ Refund
     in
         LBS.writeFile "deploy/redeemer-earthtrust-refund.json" $ encode (scriptDataToJson ScriptDataJsonDetailedSchema $ fromPlutusData $ PlutusV2.toData red)
 
