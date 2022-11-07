@@ -143,6 +143,7 @@ writeDatum =
     let etDatum = ETDatum 
             {   etdOrderAmount = 100000000                                         
             ,   etdOrderId = "123"
+            ,   etdAdaUSDPrice = "0.41546"
             }
         dat = PlutusTx.toBuiltinData etDatum
     in
