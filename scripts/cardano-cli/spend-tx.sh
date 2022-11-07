@@ -93,9 +93,10 @@ echo -n "$order_datum_in" > $WORK/datum-in.json
 
 # get the order details from the datum
 order_ada=$(jq -r '.fields[0].int' $WORK/datum-in.json)
-order_id=$(jq -r '.fields[1].bytes' $WORK/datum-in.json)
-order_id_non_hex=$(echo -n "$order_id=" | xxd -r -p)
-service_fee=$(jq -r '.fields[2].int' $WORK/datum-in.json)
+order_id_encoded=$(jq -r '.fields[1].bytes' $WORK/datum-in.json)
+order_id=$(echo -n "$order_id_encoded=" | xxd -r -p)
+ada_usd_price_encoded=$(jq -r '.fields[2].bytes' $WORK/datum-in.json)
+ada_usd_price=$(echo -n "$ada_usd_price_encoded=" | xxd -r -p)
 merchant_split=$SPLIT
 donor_split=$((100 - $SPLIT)) 
 merchant_ada=$((order_ada * $merchant_split / 100))
@@ -108,8 +109,9 @@ metadata="{
         \"date\" : \"$now\",
         \"donation_ada_amount\" : \"$donor_ada\",
         \"donation_split\" : \"$donor_split%\",
-        \"order_id\" : \"$order_id_non_hex\",
+        \"order_id\" : \"$order_id\",
         \"order_ada_amount\" : \"$order_ada\",
+        \"ada_usd_price\" : \"$ada_usd_price\",
         \"version\" : \"1.0\"
         }
     }

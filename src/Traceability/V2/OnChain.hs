@@ -45,7 +45,8 @@ import           Traceability.V2.Types                          (ETRedeemer(..),
 -- | ETDatum is used to record the total amount of the order and the order id
 data ETDatum = ETDatum
     {   etdOrderAmount      :: Integer 
-    ,   etdOrderId          :: BuiltinByteString                                                                                                          
+    ,   etdOrderId          :: BuiltinByteString
+    ,   etdAdaUSDPrice      :: BuiltinByteString                                                                                                           
     } deriving (Show, Generic, FromJSON, ToJSON)
 
 PlutusTx.makeIsDataIndexed ''ETDatum [('ETDatum, 0)]
