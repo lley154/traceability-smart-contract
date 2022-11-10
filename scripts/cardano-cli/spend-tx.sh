@@ -67,26 +67,42 @@ admin_utxo_in=$(echo $admin_utxo_valid_array | tr -d '\n')
 cat $WORK/admin-utxo.json | jq -r 'to_entries[] | select(.value.value.lovelace == '$COLLATERAL_ADA' ) | .key' > $WORK/admin-utxo-collateral-valid.json
 readarray admin_utxo_valid_array < $WORK/admin-utxo-collateral-valid.json
 admin_utxo_collateral_in=$(echo $admin_utxo_valid_array | tr -d '\n')
-
+readarray black_list_utxo_array < $BASE/scripts/cardano-cli/$ENV/data/black-list-utxo.txt
 
 # Step 2: Get the earthtrust smart contract utxos
 $CARDANO_CLI query utxo --address $validator_script_addr $network --out-file $WORK/validator-utxo.json
 
-order_utxo_in=$(jq -r '[to_entries[] 
-| select(.value.inlineDatum 
-| length > 0) 
-| .key][0]' $WORK/validator-utxo.json)
+cat $WORK/validator-utxo.json | jq -r 'to_entries[] | select(.value.inlineDatum | length > 0) | .key' > $WORK/order_utxo_in.txt
 
-# check if there are any utxos at the validator, if not, then exit
-if [ $order_utxo_in == null ];
+readarray order_utxo_in_array < $WORK/order_utxo_in.txt
+
+
+order_array_length="${#order_utxo_in_array[@]}"
+order_utxo_in=""
+
+# Find a utxo that is not on the blacklist 
+for (( c=0; c<$order_array_length; c++ ))
+do 
+    if printf '%s' "${black_list_utxo_array[@]}" | grep -q -x "${order_utxo_in_array[$c]}"; 
+        then 
+            echo "UTXO on blacklist: ${order_utxo_in_array[$c]}"
+        else 
+            order_utxo_in=$(echo ${order_utxo_in_array[$c]} | tr -d '\n')
+            break 
+    fi
+done
+
+
+# check if there are any utxos at the validator that we can
+# use, if not, then exit
+if [ -z $order_utxo_in ];
 then
     exit 0
 fi
 
-order_datum_in=$(jq -r '[to_entries[] 
-| select(.value.inlineDatum 
-| length > 0) 
-| .value.inlineDatum][0] ' $WORK/validator-utxo.json)
+order_datum_in=$(jq -r 'to_entries[] 
+| select(.key == "'$order_utxo_in'") 
+| .value.inlineDatum ' $WORK/validator-utxo.json)
 
 echo -n "$order_datum_in" > $WORK/datum-in.json
 
@@ -121,7 +137,6 @@ echo $metadata > $BASE/scripts/cardano-cli/$ENV/data/earthtrust-spend-metadata.j
 metadata_file_path="$BASE/scripts/cardano-cli/$ENV/data/earthtrust-spend-metadata.json"
 
 
-
 # Step 3: Build and submit the transaction
 $CARDANO_CLI transaction build \
   --babbage-era \
@@ -140,20 +155,20 @@ $CARDANO_CLI transaction build \
   --required-signer-hash "$admin_pkh" \
   --protocol-params-file "$WORK/pparms.json" \
   --metadata-json-file "$metadata_file_path" \
-  --out-file $WORK/add-ada-tx-alonzo.body
+  --out-file $WORK/spend-tx-alonzo.body
 
 echo "tx has been built"
 
 
 $CARDANO_CLI transaction sign \
-  --tx-body-file $WORK/add-ada-tx-alonzo.body \
+  --tx-body-file $WORK/spend-tx-alonzo.body \
   $network \
   --signing-key-file "${ADMIN_SKEY}" \
-  --out-file $WORK/add-ada-tx-alonzo.tx
+  --out-file $WORK/spend-tx-alonzo.tx
 
 echo "tx has been signed"
 
 echo "Submit the tx with plutus script and wait 5 seconds..."
-$CARDANO_CLI transaction submit --tx-file $WORK/add-ada-tx-alonzo.tx $network
+$CARDANO_CLI transaction submit --tx-file $WORK/spend-tx-alonzo.tx $network
 
 

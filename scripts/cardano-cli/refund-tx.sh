@@ -132,18 +132,18 @@ $CARDANO_CLI transaction build \
   --required-signer-hash "$admin_pkh" \
   --protocol-params-file "$WORK/pparms.json" \
   --metadata-json-file "$metadata_file_path" \
-  --out-file $WORK/add-ada-tx-alonzo.body
+  --out-file $WORK/refund-tx-alonzo.body
 
 echo "tx has been built"
 
 $CARDANO_CLI transaction sign \
-  --tx-body-file $WORK/add-ada-tx-alonzo.body \
+  --tx-body-file $WORK/refund-tx-alonzo.body \
   $network \
   --signing-key-file "${ADMIN_SKEY}" \
-  --out-file $WORK/add-ada-tx-alonzo.tx
+  --out-file $WORK/refund-tx-alonzo.tx
 
 echo "tx has been signed"
 
 echo "Submit the tx with plutus script and wait 5 seconds..."
-$CARDANO_CLI transaction submit --tx-file $WORK/add-ada-tx-alonzo.tx $network
+$CARDANO_CLI transaction submit --tx-file $WORK/refund-tx-alonzo.tx $network
 
