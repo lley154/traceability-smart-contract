@@ -338,4 +338,480 @@ b29ef55ae27c5e5942a18ed5545b461c84610bab66bd59b18d37e712fe67cb18     1        20
 
 
 
+####################################################################################################
+###############################  BLACKLIST UTXO TEST CASE ##########################################
+####################################################################################################
+
+lawrence@lawrence-MacBookAir:~/src/traceability-smart-contract/scripts/cardano-cli$ cardano-cli query utxo --address addr_test1wrz803x4p3xlntqth0l8reljp0ygz6fz7zyxjxp7mc50t8cz8et8u --testnet-magic 1
+                           TxHash                                 TxIx        Amount
+--------------------------------------------------------------------------------------
+26b06ef773ac553c8216d87f5bd37e6cae2de5c82eccef03861cec66bad4b75b     0        113880000 lovelace + TxOutDatumInline ReferenceTxInsScriptsInlineDatumsInBabbageEra (ScriptDataConstructor 0 [ScriptDataNumber 113380000,ScriptDataBytes "4658719883329",ScriptDataBytes "0.36954"])
+6a8aececa2d95d1dd2637d612397a30709bfd99dc80766438435b33045c56fde     0        115120000 lovelace + TxOutDatumInline ReferenceTxInsScriptsInlineDatumsInBabbageEra (ScriptDataConstructor 0 [ScriptDataNumber 114620000,ScriptDataBytes "4631164354625",ScriptDataBytes "0.36958"])
+79eaa22fc34832e998164f23b44ef87d00f4d70c6098df19198af526ae591dac     0        115280000 lovelace + TxOutDatumInline ReferenceTxInsScriptsInlineDatumsInBabbageEra (ScriptDataConstructor 0 [ScriptDataNumber 114780000,ScriptDataBytes "4658650841153",ScriptDataBytes "0.36908"])
+81adf7b562b8c4fe97eb21da67ea64c890b2b0d2f79f8c35c0f3850d9bab2f02     0        114210000 lovelace + TxOutDatumInline ReferenceTxInsScriptsInlineDatumsInBabbageEra (ScriptDataConstructor 0 [ScriptDataNumber 113710000,ScriptDataBytes "4658650841153",ScriptDataBytes "0.37257"])
+85a38fe562ecbbb953bc7b47888d467e1ba2b341b3db52ed726353ed63eca6eb     0        113840000 lovelace + TxOutDatumInline ReferenceTxInsScriptsInlineDatumsInBabbageEra (ScriptDataConstructor 0 [ScriptDataNumber 113340000,ScriptDataBytes "4658723553345",ScriptDataBytes "0.36969"])
+85ac254e30cd8326742085b4bce562888423aa7ca81f7e37f490d3b24dcdfe3d     1        20000000 lovelace + TxOutDatumNone
+
+
+lawrence@lawrence-MacBookAir:~/src/traceability-smart-contract/scripts/cardano-cli$ cat preprod/data/black-list-utxo.txt 
+6a8aececa2d95d1dd2637d612397a30709bfd99dc80766438435b33045c56fde#0
+79eaa22fc34832e998164f23b44ef87d00f4d70c6098df19198af526ae591dac#0
+81adf7b562b8c4fe97eb21da67ea64c890b2b0d2f79f8c35c0f3850d9bab2f02#0
+26b06ef773ac553c8216d87f5bd37e6cae2de5c82eccef03861cec66bad4b75b#0
+
+
+
+lawrence@lawrence-MacBookAir:~/src/traceability-smart-contract/scripts/cardano-cli$ ./spend-tx.sh preprod
++ '[' -z preprod ']'
++ ENV=preprod
++++ readlink -f ./spend-tx.sh
+++ dirname /home/lawrence/src/traceability-smart-contract/scripts/cardano-cli/spend-tx.sh
++ MY_DIR=/home/lawrence/src/traceability-smart-contract/scripts/cardano-cli
++ source /home/lawrence/src/traceability-smart-contract/scripts/cardano-cli/preprod/global-export-variables.sh
+++ set -e
+++ set -o pipefail
+++ export BASE=/home/lawrence/src/traceability-smart-contract
+++ BASE=/home/lawrence/src/traceability-smart-contract
+++ export WORK=/home/lawrence/src/traceability-smart-contract/work
+++ WORK=/home/lawrence/src/traceability-smart-contract/work
+++ export CARDANO_CLI=/usr/local/bin/cardano-cli
+++ CARDANO_CLI=/usr/local/bin/cardano-cli
+++ export BECH32=/usr/local/bin/bech32
+++ BECH32=/usr/local/bin/bech32
+++ export CARDANO_NODE_SOCKET_PATH=/var/snap/docker/common/var-lib-docker/volumes/cardano-ipc/_data/node.socket
+++ CARDANO_NODE_SOCKET_PATH=/var/snap/docker/common/var-lib-docker/volumes/cardano-ipc/_data/node.socket
+++ export TESTNET_MAGIC=1
+++ TESTNET_MAGIC=1
+++ export ADMIN_VKEY=/home/lawrence/.local/keys/testnet/admin/admin.vkey
+++ ADMIN_VKEY=/home/lawrence/.local/keys/testnet/admin/admin.vkey
+++ export ADMIN_SKEY=/home/lawrence/.local/keys/testnet/admin/admin.skey
+++ ADMIN_SKEY=/home/lawrence/.local/keys/testnet/admin/admin.skey
+++ export ADMIN_PKH=/home/lawrence/.local/keys/testnet/admin/admin.hash
+++ ADMIN_PKH=/home/lawrence/.local/keys/testnet/admin/admin.hash
+++ export MIN_ADA_OUTPUT_TX=2000000
+++ MIN_ADA_OUTPUT_TX=2000000
+++ export MIN_ADA_OUTPUT_TX_REF=20000000
+++ MIN_ADA_OUTPUT_TX_REF=20000000
+++ export COLLATERAL_ADA=5000000
+++ COLLATERAL_ADA=5000000
+++ export MERCHANT_ADDR=addr_test1vq7k907l7e59t52skm8e0ezsnmmc7h4xy30kg2klwc5n8rqug2pds
+++ MERCHANT_ADDR=addr_test1vq7k907l7e59t52skm8e0ezsnmmc7h4xy30kg2klwc5n8rqug2pds
+++ export DONOR_ADDR=addr_test1vzetpfww4aaunft0ucvcrxugj8nt4lhltsktya0rx0uh48cqghjfg
+++ DONOR_ADDR=addr_test1vzetpfww4aaunft0ucvcrxugj8nt4lhltsktya0rx0uh48cqghjfg
+++ export REFUND_ADDR=addr_test1vzs24vjh8salzqt5pahgvr34ewfwagxaxr5pz7eswugzn2gmw4f5w
+++ REFUND_ADDR=addr_test1vzs24vjh8salzqt5pahgvr34ewfwagxaxr5pz7eswugzn2gmw4f5w
+++ export VAL_REF_SCRIPT=85ac254e30cd8326742085b4bce562888423aa7ca81f7e37f490d3b24dcdfe3d#1
+++ VAL_REF_SCRIPT=85ac254e30cd8326742085b4bce562888423aa7ca81f7e37f490d3b24dcdfe3d#1
+++ export SPLIT=99
+++ SPLIT=99
+++ export BLOCKFROST_API_KEY=preprodxg6GaNVZoHWUfQd7HQcgUg8epWhE1aMi
+++ BLOCKFROST_API_KEY=preprodxg6GaNVZoHWUfQd7HQcgUg8epWhE1aMi
+++ export BLOCKFROST_API=https://cardano-preprod.blockfrost.io/api/v0
+++ BLOCKFROST_API=https://cardano-preprod.blockfrost.io/api/v0
++ '[' preprod == mainnet ']'
++ network='--testnet-magic 1'
++ echo 'Socket path: /var/snap/docker/common/var-lib-docker/volumes/cardano-ipc/_data/node.socket'
+Socket path: /var/snap/docker/common/var-lib-docker/volumes/cardano-ipc/_data/node.socket
++ ls -al /var/snap/docker/common/var-lib-docker/volumes/cardano-ipc/_data/node.socket
+srwxrwxrwx 1 root root 0 Nov  6 07:52 /var/snap/docker/common/var-lib-docker/volumes/cardano-ipc/_data/node.socket
++ mkdir -p /home/lawrence/src/traceability-smart-contract/work
++ mkdir -p /home/lawrence/src/traceability-smart-contract/work-backup
++ rm -f /home/lawrence/src/traceability-smart-contract/work/admin-utxo-collateral-valid.json /home/lawrence/src/traceability-smart-contract/work/admin-utxo-valid.json /home/lawrence/src/traceability-smart-contract/work/admin-utxo.json /home/lawrence/src/traceability-smart-contract/work/datum-in.json /home/lawrence/src/traceability-smart-contract/work/order_utxo_in.txt /home/lawrence/src/traceability-smart-contract/work/pparms.json /home/lawrence/src/traceability-smart-contract/work/spend-tx-alonzo.body /home/lawrence/src/traceability-smart-contract/work/spend-tx-alonzo.tx /home/lawrence/src/traceability-smart-contract/work/validator-utxo.json
++ rm -f '/home/lawrence/src/traceability-smart-contract/work-backup/*'
++ /usr/local/bin/cardano-cli query protocol-parameters --testnet-magic 1 --out-file /home/lawrence/src/traceability-smart-contract/work/pparms.json
++ validator_script=/home/lawrence/src/traceability-smart-contract/scripts/cardano-cli/preprod/data/earthtrust-validator.plutus
+++ /usr/local/bin/cardano-cli address build --payment-script-file /home/lawrence/src/traceability-smart-contract/scripts/cardano-cli/preprod/data/earthtrust-validator.plutus --testnet-magic 1
++ validator_script_addr=addr_test1wrz803x4p3xlntqth0l8reljp0ygz6fz7zyxjxp7mc50t8cz8et8u
++ redeemer_file_path=/home/lawrence/src/traceability-smart-contract/scripts/cardano-cli/preprod/data/redeemer-earthtrust-spend.json
+++ cat /home/lawrence/.local/keys/testnet/admin/admin.hash
++ admin_pkh=b9abcf6867519e28042048aa11207214a52e6d5d3288b752d1c27682
+++ /usr/local/bin/cardano-cli address build --testnet-magic 1 --payment-verification-key-file /home/lawrence/.local/keys/testnet/admin/admin.vkey
++ admin_utxo_addr=addr_test1vzu6hnmgvageu2qyypy25yfqwg222tndt5eg3d6j68p8dqspgdxn7
++ /usr/local/bin/cardano-cli query utxo --address addr_test1vzu6hnmgvageu2qyypy25yfqwg222tndt5eg3d6j68p8dqspgdxn7 --cardano-mode --testnet-magic 1 --out-file /home/lawrence/src/traceability-smart-contract/work/admin-utxo.json
++ cat /home/lawrence/src/traceability-smart-contract/work/admin-utxo.json
++ jq -r 'to_entries[] | select(.value.value.lovelace > 5000000 ) | .key'
++ readarray admin_utxo_valid_array
+++ echo 0cc9324980ebacb53d77e0d378438ae89d99b50b160960fce41297d2dcd2013c#0
+++ tr -d '\n'
++ admin_utxo_in=0cc9324980ebacb53d77e0d378438ae89d99b50b160960fce41297d2dcd2013c#0
++ cat /home/lawrence/src/traceability-smart-contract/work/admin-utxo.json
++ jq -r 'to_entries[] | select(.value.value.lovelace == 5000000 ) | .key'
++ readarray admin_utxo_valid_array
+++ echo cb53353bf5a44004175f7e7d8817485372a2d9f6d7a27bbc56a75ed0f305e8da#0
+++ tr -d '\n'
++ admin_utxo_collateral_in=cb53353bf5a44004175f7e7d8817485372a2d9f6d7a27bbc56a75ed0f305e8da#0
++ readarray black_list_utxo_array
++ /usr/local/bin/cardano-cli query utxo --address addr_test1wrz803x4p3xlntqth0l8reljp0ygz6fz7zyxjxp7mc50t8cz8et8u --testnet-magic 1 --out-file /home/lawrence/src/traceability-smart-contract/work/validator-utxo.json
++ cat /home/lawrence/src/traceability-smart-contract/work/validator-utxo.json
++ jq -r 'to_entries[] | select(.value.inlineDatum | length > 0) | .key'
++ readarray order_utxo_in_array
++ order_array_length=5
++ order_utxo_in=
++ (( c=0 ))
++ (( c<5 ))
++ printf %s '6a8aececa2d95d1dd2637d612397a30709bfd99dc80766438435b33045c56fde#0
+' '79eaa22fc34832e998164f23b44ef87d00f4d70c6098df19198af526ae591dac#0
+' '81adf7b562b8c4fe97eb21da67ea64c890b2b0d2f79f8c35c0f3850d9bab2f02#0
+' '26b06ef773ac553c8216d87f5bd37e6cae2de5c82eccef03861cec66bad4b75b#0
+'
++ grep -q -x '26b06ef773ac553c8216d87f5bd37e6cae2de5c82eccef03861cec66bad4b75b#0
+'
++ echo 'UTXO on blacklist: 26b06ef773ac553c8216d87f5bd37e6cae2de5c82eccef03861cec66bad4b75b#0
+'
+UTXO on blacklist: 26b06ef773ac553c8216d87f5bd37e6cae2de5c82eccef03861cec66bad4b75b#0
+
++ (( c++  ))
++ (( c<5 ))
++ printf %s '6a8aececa2d95d1dd2637d612397a30709bfd99dc80766438435b33045c56fde#0
+' '79eaa22fc34832e998164f23b44ef87d00f4d70c6098df19198af526ae591dac#0
+' '81adf7b562b8c4fe97eb21da67ea64c890b2b0d2f79f8c35c0f3850d9bab2f02#0
+' '26b06ef773ac553c8216d87f5bd37e6cae2de5c82eccef03861cec66bad4b75b#0
+'
++ grep -q -x '6a8aececa2d95d1dd2637d612397a30709bfd99dc80766438435b33045c56fde#0
+'
++ echo 'UTXO on blacklist: 6a8aececa2d95d1dd2637d612397a30709bfd99dc80766438435b33045c56fde#0
+'
+UTXO on blacklist: 6a8aececa2d95d1dd2637d612397a30709bfd99dc80766438435b33045c56fde#0
+
++ (( c++  ))
++ (( c<5 ))
++ printf %s '6a8aececa2d95d1dd2637d612397a30709bfd99dc80766438435b33045c56fde#0
+' '79eaa22fc34832e998164f23b44ef87d00f4d70c6098df19198af526ae591dac#0
+' '81adf7b562b8c4fe97eb21da67ea64c890b2b0d2f79f8c35c0f3850d9bab2f02#0
+' '26b06ef773ac553c8216d87f5bd37e6cae2de5c82eccef03861cec66bad4b75b#0
+'
++ grep -q -x '79eaa22fc34832e998164f23b44ef87d00f4d70c6098df19198af526ae591dac#0
+'
++ echo 'UTXO on blacklist: 79eaa22fc34832e998164f23b44ef87d00f4d70c6098df19198af526ae591dac#0
+'
+UTXO on blacklist: 79eaa22fc34832e998164f23b44ef87d00f4d70c6098df19198af526ae591dac#0
+
++ (( c++  ))
++ (( c<5 ))
++ printf %s '6a8aececa2d95d1dd2637d612397a30709bfd99dc80766438435b33045c56fde#0
+' '79eaa22fc34832e998164f23b44ef87d00f4d70c6098df19198af526ae591dac#0
+' '81adf7b562b8c4fe97eb21da67ea64c890b2b0d2f79f8c35c0f3850d9bab2f02#0
+' '26b06ef773ac553c8216d87f5bd37e6cae2de5c82eccef03861cec66bad4b75b#0
+'
++ grep -q -x '81adf7b562b8c4fe97eb21da67ea64c890b2b0d2f79f8c35c0f3850d9bab2f02#0
+'
++ echo 'UTXO on blacklist: 81adf7b562b8c4fe97eb21da67ea64c890b2b0d2f79f8c35c0f3850d9bab2f02#0
+'
+UTXO on blacklist: 81adf7b562b8c4fe97eb21da67ea64c890b2b0d2f79f8c35c0f3850d9bab2f02#0
+
++ (( c++  ))
++ (( c<5 ))
++ printf %s '6a8aececa2d95d1dd2637d612397a30709bfd99dc80766438435b33045c56fde#0
+' '79eaa22fc34832e998164f23b44ef87d00f4d70c6098df19198af526ae591dac#0
+' '81adf7b562b8c4fe97eb21da67ea64c890b2b0d2f79f8c35c0f3850d9bab2f02#0
+' '26b06ef773ac553c8216d87f5bd37e6cae2de5c82eccef03861cec66bad4b75b#0
+'
++ grep -q -x '85a38fe562ecbbb953bc7b47888d467e1ba2b341b3db52ed726353ed63eca6eb#0
+'
+++ echo 85a38fe562ecbbb953bc7b47888d467e1ba2b341b3db52ed726353ed63eca6eb#0
+++ tr -d '\n'
++ order_utxo_in=85a38fe562ecbbb953bc7b47888d467e1ba2b341b3db52ed726353ed63eca6eb#0
++ break
++ '[' -z 85a38fe562ecbbb953bc7b47888d467e1ba2b341b3db52ed726353ed63eca6eb#0 ']'
+++ jq -r 'to_entries[] 
+| select(.key == "85a38fe562ecbbb953bc7b47888d467e1ba2b341b3db52ed726353ed63eca6eb#0") 
+| .value.inlineDatum ' /home/lawrence/src/traceability-smart-contract/work/validator-utxo.json
++ order_datum_in='{
+  "constructor": 0,
+  "fields": [
+    {
+      "int": 113340000
+    },
+    {
+      "bytes": "34363538373233353533333435"
+    },
+    {
+      "bytes": "302e3336393639"
+    }
+  ]
+}'
++ echo -n '{
+  "constructor": 0,
+  "fields": [
+    {
+      "int": 113340000
+    },
+    {
+      "bytes": "34363538373233353533333435"
+    },
+    {
+      "bytes": "302e3336393639"
+    }
+  ]
+}'
+++ jq -r '.fields[0].int' /home/lawrence/src/traceability-smart-contract/work/datum-in.json
++ order_ada=113340000
+++ jq -r '.fields[1].bytes' /home/lawrence/src/traceability-smart-contract/work/datum-in.json
++ order_id_encoded=34363538373233353533333435
+++ echo -n 34363538373233353533333435=
+++ xxd -r -p
++ order_id=4658723553345
+++ jq -r '.fields[2].bytes' /home/lawrence/src/traceability-smart-contract/work/datum-in.json
++ ada_usd_price_encoded=302e3336393639
+++ echo -n 302e3336393639=
+++ xxd -r -p
++ ada_usd_price=0.36969
++ merchant_split=99
++ donor_split=1
++ merchant_ada=112206600
++ donor_ada=1133400
+++ date +%Y/%m/%d-%H:%M:%S
++ now=2022/11/10-10:51:15
+++ curl -H 'X-Shopify-Access-Token: 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' https://test1-2803.myshopify.com//admin/api/2022-10/orders/4658723553345.json
+++ jq -r .order.total_price
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100  6727    0  6727    0     0  27234      0 --:--:-- --:--:-- --:--:-- 27125
++ shopify_order_amount=41.90
+++ bc
++ shopify_order_ada=113.338
+++ bc
++ datum_order_ada=113.340
+++ printf '%.*f\n' 2 113.338
++ shopify_order_ada_rounded=113.34
+++ printf '%.*f\n' 2 113.340
++ datum_order_ada_rounded=113.34
+++ echo '113.34 == 113.34'
+++ bc -l
++ ((  1  ))
++ metadata='{
+"1" : {
+    "order_detail" : {
+        "date" : "2022/11/10-10:51:15",
+        "donation_ada_amount" : "1133400",
+        "donation_split" : "1%",
+        "order_id" : "4658723553345",
+        "order_ada_amount" : "113340000",
+        "ada_usd_price" : "0.36969",
+        "version" : "1.0"
+        }
+    }
+}'
++ echo '{' '"1"' : '{' '"order_detail"' : '{' '"date"' : '"2022/11/10-10:51:15",' '"donation_ada_amount"' : '"1133400",' '"donation_split"' : '"1%",' '"order_id"' : '"4658723553345",' '"order_ada_amount"' : '"113340000",' '"ada_usd_price"' : '"0.36969",' '"version"' : '"1.0"' '}' '}' '}'
++ metadata_file_path=/home/lawrence/src/traceability-smart-contract/scripts/cardano-cli/preprod/data/earthtrust-spend-metadata.json
++ /usr/local/bin/cardano-cli transaction build --babbage-era --cardano-mode --testnet-magic 1 --change-address addr_test1vzu6hnmgvageu2qyypy25yfqwg222tndt5eg3d6j68p8dqspgdxn7 --tx-in-collateral cb53353bf5a44004175f7e7d8817485372a2d9f6d7a27bbc56a75ed0f305e8da#0 --tx-in 0cc9324980ebacb53d77e0d378438ae89d99b50b160960fce41297d2dcd2013c#0 --tx-in 85a38fe562ecbbb953bc7b47888d467e1ba2b341b3db52ed726353ed63eca6eb#0 --spending-tx-in-reference 85ac254e30cd8326742085b4bce562888423aa7ca81f7e37f490d3b24dcdfe3d#1 --spending-plutus-script-v2 --spending-reference-tx-in-inline-datum-present --spending-reference-tx-in-redeemer-file /home/lawrence/src/traceability-smart-contract/scripts/cardano-cli/preprod/data/redeemer-earthtrust-spend.json --tx-out addr_test1vq7k907l7e59t52skm8e0ezsnmmc7h4xy30kg2klwc5n8rqug2pds+112206600 --tx-out addr_test1vzetpfww4aaunft0ucvcrxugj8nt4lhltsktya0rx0uh48cqghjfg+1133400 --required-signer-hash b9abcf6867519e28042048aa11207214a52e6d5d3288b752d1c27682 --protocol-params-file /home/lawrence/src/traceability-smart-contract/work/pparms.json --metadata-json-file /home/lawrence/src/traceability-smart-contract/scripts/cardano-cli/preprod/data/earthtrust-spend-metadata.json --out-file /home/lawrence/src/traceability-smart-contract/work/spend-tx-alonzo.body
+Estimated transaction fee: Lovelace 329567
++ echo 'tx has been built'
+tx has been built
++ /usr/local/bin/cardano-cli transaction sign --tx-body-file /home/lawrence/src/traceability-smart-contract/work/spend-tx-alonzo.body --testnet-magic 1 --signing-key-file /home/lawrence/.local/keys/testnet/admin/admin.skey --out-file /home/lawrence/src/traceability-smart-contract/work/spend-tx-alonzo.tx
++ echo 'tx has been signed'
+tx has been signed
++ echo 'Submit the tx with plutus script and wait 5 seconds...'
+Submit the tx with plutus script and wait 5 seconds...
++ /usr/local/bin/cardano-cli transaction submit --tx-file /home/lawrence/src/traceability-smart-contract/work/spend-tx-alonzo.tx --testnet-magic 1
+Transaction successfully submitted.
+
+
+
+lawrence@lawrence-MacBookAir:~/src/traceability-smart-contract/scripts/cardano-cli$ cardano-cli query utxo --address addr_test1wrz803x4p3xlntqth0l8reljp0ygz6fz7zyxjxp7mc50t8cz8et8u --testnet-magic 1
+                           TxHash                                 TxIx        Amount
+--------------------------------------------------------------------------------------
+26b06ef773ac553c8216d87f5bd37e6cae2de5c82eccef03861cec66bad4b75b     0        113880000 lovelace + TxOutDatumInline ReferenceTxInsScriptsInlineDatumsInBabbageEra (ScriptDataConstructor 0 [ScriptDataNumber 113380000,ScriptDataBytes "4658719883329",ScriptDataBytes "0.36954"])
+6a8aececa2d95d1dd2637d612397a30709bfd99dc80766438435b33045c56fde     0        115120000 lovelace + TxOutDatumInline ReferenceTxInsScriptsInlineDatumsInBabbageEra (ScriptDataConstructor 0 [ScriptDataNumber 114620000,ScriptDataBytes "4631164354625",ScriptDataBytes "0.36958"])
+79eaa22fc34832e998164f23b44ef87d00f4d70c6098df19198af526ae591dac     0        115280000 lovelace + TxOutDatumInline ReferenceTxInsScriptsInlineDatumsInBabbageEra (ScriptDataConstructor 0 [ScriptDataNumber 114780000,ScriptDataBytes "4658650841153",ScriptDataBytes "0.36908"])
+81adf7b562b8c4fe97eb21da67ea64c890b2b0d2f79f8c35c0f3850d9bab2f02     0        114210000 lovelace + TxOutDatumInline ReferenceTxInsScriptsInlineDatumsInBabbageEra (ScriptDataConstructor 0 [ScriptDataNumber 113710000,ScriptDataBytes "4658650841153",ScriptDataBytes "0.37257"])
+85ac254e30cd8326742085b4bce562888423aa7ca81f7e37f490d3b24dcdfe3d     1        20000000 lovelace + TxOutDatumNone
+
+
+
+
+
+####################################################################################################
+############################  ORDER AMOUNT MISMATCH TEST CASE ######################################
+####################################################################################################
+
+
+lawrence@lawrence-MacBookAir:~/src/traceability-smart-contract/scripts/cardano-cli$ ./spend-tx.sh preprod
++ '[' -z preprod ']'
++ ENV=preprod
++++ readlink -f ./spend-tx.sh
+++ dirname /home/lawrence/src/traceability-smart-contract/scripts/cardano-cli/spend-tx.sh
++ MY_DIR=/home/lawrence/src/traceability-smart-contract/scripts/cardano-cli
++ source /home/lawrence/src/traceability-smart-contract/scripts/cardano-cli/preprod/global-export-variables.sh
+++ set -e
+++ set -o pipefail
+++ export BASE=/home/lawrence/src/traceability-smart-contract
+++ BASE=/home/lawrence/src/traceability-smart-contract
+++ export WORK=/home/lawrence/src/traceability-smart-contract/work
+++ WORK=/home/lawrence/src/traceability-smart-contract/work
+++ export CARDANO_CLI=/usr/local/bin/cardano-cli
+++ CARDANO_CLI=/usr/local/bin/cardano-cli
+++ export BECH32=/usr/local/bin/bech32
+++ BECH32=/usr/local/bin/bech32
+++ export CARDANO_NODE_SOCKET_PATH=/var/snap/docker/common/var-lib-docker/volumes/cardano-ipc/_data/node.socket
+++ CARDANO_NODE_SOCKET_PATH=/var/snap/docker/common/var-lib-docker/volumes/cardano-ipc/_data/node.socket
+++ export TESTNET_MAGIC=1
+++ TESTNET_MAGIC=1
+++ export ADMIN_VKEY=/home/lawrence/.local/keys/testnet/admin/admin.vkey
+++ ADMIN_VKEY=/home/lawrence/.local/keys/testnet/admin/admin.vkey
+++ export ADMIN_SKEY=/home/lawrence/.local/keys/testnet/admin/admin.skey
+++ ADMIN_SKEY=/home/lawrence/.local/keys/testnet/admin/admin.skey
+++ export ADMIN_PKH=/home/lawrence/.local/keys/testnet/admin/admin.hash
+++ ADMIN_PKH=/home/lawrence/.local/keys/testnet/admin/admin.hash
+++ export MIN_ADA_OUTPUT_TX=2000000
+++ MIN_ADA_OUTPUT_TX=2000000
+++ export MIN_ADA_OUTPUT_TX_REF=20000000
+++ MIN_ADA_OUTPUT_TX_REF=20000000
+++ export COLLATERAL_ADA=5000000
+++ COLLATERAL_ADA=5000000
+++ export MERCHANT_ADDR=addr_test1vq7k907l7e59t52skm8e0ezsnmmc7h4xy30kg2klwc5n8rqug2pds
+++ MERCHANT_ADDR=addr_test1vq7k907l7e59t52skm8e0ezsnmmc7h4xy30kg2klwc5n8rqug2pds
+++ export DONOR_ADDR=addr_test1vzetpfww4aaunft0ucvcrxugj8nt4lhltsktya0rx0uh48cqghjfg
+++ DONOR_ADDR=addr_test1vzetpfww4aaunft0ucvcrxugj8nt4lhltsktya0rx0uh48cqghjfg
+++ export REFUND_ADDR=addr_test1vzs24vjh8salzqt5pahgvr34ewfwagxaxr5pz7eswugzn2gmw4f5w
+++ REFUND_ADDR=addr_test1vzs24vjh8salzqt5pahgvr34ewfwagxaxr5pz7eswugzn2gmw4f5w
+++ export VAL_REF_SCRIPT=85ac254e30cd8326742085b4bce562888423aa7ca81f7e37f490d3b24dcdfe3d#1
+++ VAL_REF_SCRIPT=85ac254e30cd8326742085b4bce562888423aa7ca81f7e37f490d3b24dcdfe3d#1
+++ export SPLIT=99
+++ SPLIT=99
+++ export BLOCKFROST_API_KEY=preprodxg6GaNVZoHWUfQd7HQcgUg8epWhE1aMi
+++ BLOCKFROST_API_KEY=preprodxg6GaNVZoHWUfQd7HQcgUg8epWhE1aMi
+++ export BLOCKFROST_API=https://cardano-preprod.blockfrost.io/api/v0
+++ BLOCKFROST_API=https://cardano-preprod.blockfrost.io/api/v0
++ '[' preprod == mainnet ']'
++ network='--testnet-magic 1'
++ echo 'Socket path: /var/snap/docker/common/var-lib-docker/volumes/cardano-ipc/_data/node.socket'
+Socket path: /var/snap/docker/common/var-lib-docker/volumes/cardano-ipc/_data/node.socket
++ ls -al /var/snap/docker/common/var-lib-docker/volumes/cardano-ipc/_data/node.socket
+srwxrwxrwx 1 root root 0 Nov  6 07:52 /var/snap/docker/common/var-lib-docker/volumes/cardano-ipc/_data/node.socket
++ mkdir -p /home/lawrence/src/traceability-smart-contract/work
++ mkdir -p /home/lawrence/src/traceability-smart-contract/work-backup
++ rm -f /home/lawrence/src/traceability-smart-contract/work/admin-utxo-collateral-valid.json /home/lawrence/src/traceability-smart-contract/work/admin-utxo-valid.json /home/lawrence/src/traceability-smart-contract/work/admin-utxo.json /home/lawrence/src/traceability-smart-contract/work/datum-in.json /home/lawrence/src/traceability-smart-contract/work/order_utxo_in.txt /home/lawrence/src/traceability-smart-contract/work/pparms.json /home/lawrence/src/traceability-smart-contract/work/spend-tx-alonzo.body /home/lawrence/src/traceability-smart-contract/work/spend-tx-alonzo.tx /home/lawrence/src/traceability-smart-contract/work/validator-utxo.json
++ rm -f '/home/lawrence/src/traceability-smart-contract/work-backup/*'
++ /usr/local/bin/cardano-cli query protocol-parameters --testnet-magic 1 --out-file /home/lawrence/src/traceability-smart-contract/work/pparms.json
++ validator_script=/home/lawrence/src/traceability-smart-contract/scripts/cardano-cli/preprod/data/earthtrust-validator.plutus
+++ /usr/local/bin/cardano-cli address build --payment-script-file /home/lawrence/src/traceability-smart-contract/scripts/cardano-cli/preprod/data/earthtrust-validator.plutus --testnet-magic 1
++ validator_script_addr=addr_test1wrz803x4p3xlntqth0l8reljp0ygz6fz7zyxjxp7mc50t8cz8et8u
++ redeemer_file_path=/home/lawrence/src/traceability-smart-contract/scripts/cardano-cli/preprod/data/redeemer-earthtrust-spend.json
+++ cat /home/lawrence/.local/keys/testnet/admin/admin.hash
++ admin_pkh=b9abcf6867519e28042048aa11207214a52e6d5d3288b752d1c27682
+++ /usr/local/bin/cardano-cli address build --testnet-magic 1 --payment-verification-key-file /home/lawrence/.local/keys/testnet/admin/admin.vkey
++ admin_utxo_addr=addr_test1vzu6hnmgvageu2qyypy25yfqwg222tndt5eg3d6j68p8dqspgdxn7
++ /usr/local/bin/cardano-cli query utxo --address addr_test1vzu6hnmgvageu2qyypy25yfqwg222tndt5eg3d6j68p8dqspgdxn7 --cardano-mode --testnet-magic 1 --out-file /home/lawrence/src/traceability-smart-contract/work/admin-utxo.json
++ cat /home/lawrence/src/traceability-smart-contract/work/admin-utxo.json
++ jq -r 'to_entries[] | select(.value.value.lovelace > 5000000 ) | .key'
++ readarray admin_utxo_valid_array
+++ echo 6e7c5edb3c0c4e872d270b8ddaa384b93556f9b619580b96667110cc58ddc676#0
+++ tr -d '\n'
++ admin_utxo_in=6e7c5edb3c0c4e872d270b8ddaa384b93556f9b619580b96667110cc58ddc676#0
++ cat /home/lawrence/src/traceability-smart-contract/work/admin-utxo.json
++ jq -r 'to_entries[] | select(.value.value.lovelace == 5000000 ) | .key'
++ readarray admin_utxo_valid_array
+++ echo cb53353bf5a44004175f7e7d8817485372a2d9f6d7a27bbc56a75ed0f305e8da#0
+++ tr -d '\n'
++ admin_utxo_collateral_in=cb53353bf5a44004175f7e7d8817485372a2d9f6d7a27bbc56a75ed0f305e8da#0
++ readarray black_list_utxo_array
++ /usr/local/bin/cardano-cli query utxo --address addr_test1wrz803x4p3xlntqth0l8reljp0ygz6fz7zyxjxp7mc50t8cz8et8u --testnet-magic 1 --out-file /home/lawrence/src/traceability-smart-contract/work/validator-utxo.json
++ cat /home/lawrence/src/traceability-smart-contract/work/validator-utxo.json
++ jq -r 'to_entries[] | select(.value.inlineDatum | length > 0) | .key'
++ readarray order_utxo_in_array
++ order_array_length=4
++ order_utxo_in=
++ (( c=0 ))
++ (( c<4 ))
++ printf %s '79eaa22fc34832e998164f23b44ef87d00f4d70c6098df19198af526ae591dac#0
+' '81adf7b562b8c4fe97eb21da67ea64c890b2b0d2f79f8c35c0f3850d9bab2f02#0
+' '26b06ef773ac553c8216d87f5bd37e6cae2de5c82eccef03861cec66bad4b75b#0
+'
++ grep -q -x '26b06ef773ac553c8216d87f5bd37e6cae2de5c82eccef03861cec66bad4b75b#0
+'
++ echo 'UTXO on blacklist: 26b06ef773ac553c8216d87f5bd37e6cae2de5c82eccef03861cec66bad4b75b#0
+'
+UTXO on blacklist: 26b06ef773ac553c8216d87f5bd37e6cae2de5c82eccef03861cec66bad4b75b#0
+
++ (( c++  ))
++ (( c<4 ))
++ printf %s '79eaa22fc34832e998164f23b44ef87d00f4d70c6098df19198af526ae591dac#0
+' '81adf7b562b8c4fe97eb21da67ea64c890b2b0d2f79f8c35c0f3850d9bab2f02#0
+' '26b06ef773ac553c8216d87f5bd37e6cae2de5c82eccef03861cec66bad4b75b#0
+'
++ grep -q -x '6a8aececa2d95d1dd2637d612397a30709bfd99dc80766438435b33045c56fde#0
+'
+++ echo 6a8aececa2d95d1dd2637d612397a30709bfd99dc80766438435b33045c56fde#0
+++ tr -d '\n'
++ order_utxo_in=6a8aececa2d95d1dd2637d612397a30709bfd99dc80766438435b33045c56fde#0
++ break
++ '[' -z 6a8aececa2d95d1dd2637d612397a30709bfd99dc80766438435b33045c56fde#0 ']'
+++ jq -r 'to_entries[] 
+| select(.key == "6a8aececa2d95d1dd2637d612397a30709bfd99dc80766438435b33045c56fde#0") 
+| .value.inlineDatum ' /home/lawrence/src/traceability-smart-contract/work/validator-utxo.json
++ order_datum_in='{
+  "constructor": 0,
+  "fields": [
+    {
+      "int": 114620000
+    },
+    {
+      "bytes": "34363331313634333534363235"
+    },
+    {
+      "bytes": "302e3336393538"
+    }
+  ]
+}'
++ echo -n '{
+  "constructor": 0,
+  "fields": [
+    {
+      "int": 114620000
+    },
+    {
+      "bytes": "34363331313634333534363235"
+    },
+    {
+      "bytes": "302e3336393538"
+    }
+  ]
+}'
+++ jq -r '.fields[0].int' /home/lawrence/src/traceability-smart-contract/work/datum-in.json
++ order_ada=114620000
+++ jq -r '.fields[1].bytes' /home/lawrence/src/traceability-smart-contract/work/datum-in.json
++ order_id_encoded=34363331313634333534363235
+++ echo -n 34363331313634333534363235=
+++ xxd -r -p
++ order_id=4631164354625
+++ jq -r '.fields[2].bytes' /home/lawrence/src/traceability-smart-contract/work/datum-in.json
++ ada_usd_price_encoded=302e3336393538
+++ echo -n 302e3336393538=
+++ xxd -r -p
++ ada_usd_price=0.36958
++ merchant_split=99
++ donor_split=1
++ merchant_ada=113473800
++ donor_ada=1146200
+++ date +%Y/%m/%d-%H:%M:%S
++ now=2022/11/10-10:54:05
+++ curl -H 'X-Shopify-Access-Token: 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' https://test1-2803.myshopify.com//admin/api/2022-10/orders/4631164354625.json
+++ jq -r .order.total_price
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100  6755    0  6755    0     0  12817      0 --:--:-- --:--:-- --:--:-- 12793
++ shopify_order_amount=41.90
+++ bc
++ shopify_order_ada=113.371
+++ bc
++ datum_order_ada=114.620
+++ printf '%.*f\n' 2 113.371
++ shopify_order_ada_rounded=113.37
+++ printf '%.*f\n' 2 114.620
++ datum_order_ada_rounded=114.62
+++ echo '114.62 == 113.37'
+++ bc -l
++ ((  0  ))
++ echo 'Order amount mismtach between order amount in datum vs order amount in shopify for 4631164354625'
+Order amount mismtach between order amount in datum vs order amount in shopify for 4631164354625
++ exit -1
+
+
+
+
+
+
+
+
 

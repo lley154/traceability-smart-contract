@@ -80,7 +80,7 @@ readarray order_utxo_in_array < $WORK/order_utxo_in.txt
 order_array_length="${#order_utxo_in_array[@]}"
 order_utxo_in=""
 
-# Find a utxo that is not on the blacklist 
+# Find a utxo that is not in the blacklist 
 for (( c=0; c<$order_array_length; c++ ))
 do 
     if printf '%s' "${black_list_utxo_array[@]}" | grep -q -x "${order_utxo_in_array[$c]}"; 
@@ -93,7 +93,7 @@ do
 done
 
 
-# check if there are any utxos at the validator that we can
+# Check if there are any utxos at the validator that we can
 # use, if not, then exit
 if [ -z $order_utxo_in ];
 then
@@ -107,7 +107,7 @@ order_datum_in=$(jq -r 'to_entries[]
 echo -n "$order_datum_in" > $WORK/datum-in.json
 
 
-# get the order details from the datum
+# Get the order details from the datum
 order_ada=$(jq -r '.fields[0].int' $WORK/datum-in.json)
 order_id_encoded=$(jq -r '.fields[1].bytes' $WORK/datum-in.json)
 order_id=$(echo -n "$order_id_encoded=" | xxd -r -p)
@@ -118,6 +118,23 @@ donor_split=$((100 - $SPLIT))
 merchant_ada=$((order_ada * $merchant_split / 100))
 donor_ada=$((order_ada * $donor_split / 100))
 now=$(date '+%Y/%m/%d-%H:%M:%S')
+
+
+# verify that the amount paid of the order is the same
+# as the order amount in shopify
+shopify_order_amount=$(curl -H "X-Shopify-Access-Token: $NEXT_PUBLIC_ACCESS_TOKEN" "$NEXT_PUBLIC_SHOP/admin/api/2022-10/orders/"$order_id".json" | jq -r '.order.total_price')
+shopify_order_ada=$(bc <<< "scale=3; $shopify_order_amount / $ada_usd_price")
+datum_order_ada=$(bc <<< "scale=3; $order_ada / 1000000")
+shopify_order_ada_rounded=$(printf '%.*f\n' 2 $shopify_order_ada)
+datum_order_ada_rounded=$(printf '%.*f\n' 2 $datum_order_ada)
+
+
+if !(( $(echo "$datum_order_ada_rounded == $shopify_order_ada_rounded" |bc -l) ));
+then
+    echo "Order amount mismtach between order amount in datum vs order amount in shopify for $order_id"
+    exit -1
+fi
+
 
 metadata="{
 \"1\" : {
@@ -170,5 +187,13 @@ echo "tx has been signed"
 
 echo "Submit the tx with plutus script and wait 5 seconds..."
 $CARDANO_CLI transaction submit --tx-file $WORK/spend-tx-alonzo.tx $network
+
+
+# Update shopify that the order is paid in full 
+curl -s -S -d '{"order":{"id":'"$order_id"',"tags":"PAID IN FULL"}}' \
+-X PUT "${NEXT_PUBLIC_SHOP}admin/api/2022-10/orders/$order_id.json" \
+-H "X-Shopify-Access-Token: $NEXT_PUBLIC_ACCESS_TOKEN" \
+-H "Content-Type: application/json" > /dev/null
+
 
 
