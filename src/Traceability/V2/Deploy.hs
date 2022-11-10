@@ -60,7 +60,7 @@ version = 1
 
 -- Split of the order total amount between merchant and donor
 amountSplit :: Integer
-amountSplit = 95   -- 95% goes to the merchant, 5% goes to the donor
+amountSplit = 99   -- 99% goes to the merchant, 1% goes to the donor
 
 -- Service fee to cover tx costs
 serviceFee :: Integer

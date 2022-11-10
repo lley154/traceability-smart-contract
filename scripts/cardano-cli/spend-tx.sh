@@ -67,31 +67,47 @@ admin_utxo_in=$(echo $admin_utxo_valid_array | tr -d '\n')
 cat $WORK/admin-utxo.json | jq -r 'to_entries[] | select(.value.value.lovelace == '$COLLATERAL_ADA' ) | .key' > $WORK/admin-utxo-collateral-valid.json
 readarray admin_utxo_valid_array < $WORK/admin-utxo-collateral-valid.json
 admin_utxo_collateral_in=$(echo $admin_utxo_valid_array | tr -d '\n')
-
+readarray black_list_utxo_array < $BASE/scripts/cardano-cli/$ENV/data/black-list-utxo.txt
 
 # Step 2: Get the earthtrust smart contract utxos
 $CARDANO_CLI query utxo --address $validator_script_addr $network --out-file $WORK/validator-utxo.json
 
-order_utxo_in=$(jq -r '[to_entries[] 
-| select(.value.inlineDatum 
-| length > 0) 
-| .key][0]' $WORK/validator-utxo.json)
+cat $WORK/validator-utxo.json | jq -r 'to_entries[] | select(.value.inlineDatum | length > 0) | .key' > $WORK/order_utxo_in.txt
 
-# check if there are any utxos at the validator, if not, then exit
-if [ $order_utxo_in == null ];
+readarray order_utxo_in_array < $WORK/order_utxo_in.txt
+
+
+order_array_length="${#order_utxo_in_array[@]}"
+order_utxo_in=""
+
+# Find a utxo that is not in the blacklist 
+for (( c=0; c<$order_array_length; c++ ))
+do 
+    if printf '%s' "${black_list_utxo_array[@]}" | grep -q -x "${order_utxo_in_array[$c]}"; 
+        then 
+            echo "UTXO on blacklist: ${order_utxo_in_array[$c]}"
+        else 
+            order_utxo_in=$(echo ${order_utxo_in_array[$c]} | tr -d '\n')
+            break 
+    fi
+done
+
+
+# Check if there are any utxos at the validator that we can
+# use, if not, then exit
+if [ -z $order_utxo_in ];
 then
     exit 0
 fi
 
-order_datum_in=$(jq -r '[to_entries[] 
-| select(.value.inlineDatum 
-| length > 0) 
-| .value.inlineDatum][0] ' $WORK/validator-utxo.json)
+order_datum_in=$(jq -r 'to_entries[] 
+| select(.key == "'$order_utxo_in'") 
+| .value.inlineDatum ' $WORK/validator-utxo.json)
 
 echo -n "$order_datum_in" > $WORK/datum-in.json
 
 
-# get the order details from the datum
+# Get the order details from the datum
 order_ada=$(jq -r '.fields[0].int' $WORK/datum-in.json)
 order_id_encoded=$(jq -r '.fields[1].bytes' $WORK/datum-in.json)
 order_id=$(echo -n "$order_id_encoded=" | xxd -r -p)
@@ -102,6 +118,23 @@ donor_split=$((100 - $SPLIT))
 merchant_ada=$((order_ada * $merchant_split / 100))
 donor_ada=$((order_ada * $donor_split / 100))
 now=$(date '+%Y/%m/%d-%H:%M:%S')
+
+
+# verify that the amount paid of the order is the same
+# as the order amount in shopify
+shopify_order_amount=$(curl -H "X-Shopify-Access-Token: $NEXT_PUBLIC_ACCESS_TOKEN" "$NEXT_PUBLIC_SHOP/admin/api/2022-10/orders/"$order_id".json" | jq -r '.order.total_price')
+shopify_order_ada=$(bc <<< "scale=3; $shopify_order_amount / $ada_usd_price")
+datum_order_ada=$(bc <<< "scale=3; $order_ada / 1000000")
+shopify_order_ada_rounded=$(printf '%.*f\n' 2 $shopify_order_ada)
+datum_order_ada_rounded=$(printf '%.*f\n' 2 $datum_order_ada)
+
+
+if !(( $(echo "$datum_order_ada_rounded == $shopify_order_ada_rounded" |bc -l) ));
+then
+    echo "Order amount mismtach between order amount in datum vs order amount in shopify for $order_id"
+    exit -1
+fi
+
 
 metadata="{
 \"1\" : {
@@ -119,7 +152,6 @@ metadata="{
 
 echo $metadata > $BASE/scripts/cardano-cli/$ENV/data/earthtrust-spend-metadata.json
 metadata_file_path="$BASE/scripts/cardano-cli/$ENV/data/earthtrust-spend-metadata.json"
-
 
 
 # Step 3: Build and submit the transaction
@@ -140,20 +172,28 @@ $CARDANO_CLI transaction build \
   --required-signer-hash "$admin_pkh" \
   --protocol-params-file "$WORK/pparms.json" \
   --metadata-json-file "$metadata_file_path" \
-  --out-file $WORK/add-ada-tx-alonzo.body
+  --out-file $WORK/spend-tx-alonzo.body
 
 echo "tx has been built"
 
 
 $CARDANO_CLI transaction sign \
-  --tx-body-file $WORK/add-ada-tx-alonzo.body \
+  --tx-body-file $WORK/spend-tx-alonzo.body \
   $network \
   --signing-key-file "${ADMIN_SKEY}" \
-  --out-file $WORK/add-ada-tx-alonzo.tx
+  --out-file $WORK/spend-tx-alonzo.tx
 
 echo "tx has been signed"
 
 echo "Submit the tx with plutus script and wait 5 seconds..."
-$CARDANO_CLI transaction submit --tx-file $WORK/add-ada-tx-alonzo.tx $network
+$CARDANO_CLI transaction submit --tx-file $WORK/spend-tx-alonzo.tx $network
+
+
+# Update shopify that the order is paid in full 
+curl -s -S -d '{"order":{"id":'"$order_id"',"tags":"PAID IN FULL"}}' \
+-X PUT "${NEXT_PUBLIC_SHOP}admin/api/2022-10/orders/$order_id.json" \
+-H "X-Shopify-Access-Token: $NEXT_PUBLIC_ACCESS_TOKEN" \
+-H "Content-Type: application/json" > /dev/null
+
 
 
