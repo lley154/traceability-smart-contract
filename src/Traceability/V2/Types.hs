@@ -7,42 +7,44 @@
 
 module Traceability.V2.Types 
 (
-     MintPolicyRedeemer(..)
-   , NFTMintPolicyParams(..)
+  ETRedeemer(..)
+, ETValidatorParams(..)
 
 )where
 
 import qualified    Ledger.Address as Address           (PaymentPubKeyHash(..))
-import qualified    Ledger.Value as Value               (TokenName(..))
 import qualified    PlutusTx                            (makeIsDataIndexed, makeLift)
-import              PlutusTx.Prelude                    (Bool(..), Integer)
+import              PlutusTx.Prelude                    (Integer)
 import qualified    Prelude as Haskell                  (Show)
 
-
--- | The mint policy reeemder indicates if the token is to be minted or burned
-data MintPolicyRedeemer = MintPolicyRedeemer
+-- | The earthtrust validator parameters that are used to hard code
+--   key parameters into the earthtrust smart contract
+data ETValidatorParams = ETValidatorParams
     { 
-      mpPolarity                  :: Bool              -- True = Mint, False = Burn
-    , mpAdaAmount                 :: Integer           -- The total amount of the order 
+      etvVersion                 :: Integer  
+    , etvSplit                   :: Integer
+    , etvServiceFee              :: Integer
+    , etvMerchantPkh             :: Address.PaymentPubKeyHash
+    , etvDonorPkh                :: Address.PaymentPubKeyHash
+    , etvAdminPkh                :: Address.PaymentPubKeyHash
+    , etvRefundPkh               :: Address.PaymentPubKeyHash
     } deriving Haskell.Show
 
-PlutusTx.makeIsDataIndexed ''MintPolicyRedeemer [('MintPolicyRedeemer,0)] 
-PlutusTx.makeLift ''MintPolicyRedeemer
+PlutusTx.makeIsDataIndexed ''ETValidatorParams [('ETValidatorParams,0)] 
+PlutusTx.makeLift ''ETValidatorParams
 
+-- | The ETRedemeer used to indicate if the action is to spend or refund the
+--   the Ada locked at the smart contract
+data ETRedeemer = 
+       Spend            -- spend earthtrust locked Ada and send to merchant and donor 
+     | Refund           -- refund locked Ada to customer
 
--- | The NFT minting policy params passes parameters 
---   into the minting poicy which will make the NFT policy unique
-data NFTMintPolicyParams = NFTMintPolicyParams
-    { 
-      nftVersion                 :: Integer  
-    , nftSplit                   :: Integer
-    , nftMerchantPkh             :: Address.PaymentPubKeyHash
-    , nftDonorPkh                :: Address.PaymentPubKeyHash
-    , nftTokenName               :: Value.TokenName
-    } deriving Haskell.Show
+    deriving Haskell.Show
 
-PlutusTx.makeIsDataIndexed ''NFTMintPolicyParams [('NFTMintPolicyParams,0)] 
-PlutusTx.makeLift ''NFTMintPolicyParams
-
-
+PlutusTx.makeIsDataIndexed
+  ''ETRedeemer
+  [ ('Spend, 0),
+    ('Refund, 1)
+  ]
+PlutusTx.makeLift ''ETRedeemer
 

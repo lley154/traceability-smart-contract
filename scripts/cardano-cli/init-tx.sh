@@ -9,8 +9,8 @@
 #           changes in the merchant and donor wallets, if the 
 #           split has changed and any version number changes.
 # Step 3.   nix-shell, cabal repl, main
-# Step 4.   Copy deploy/* scripts/cardano-cli/[devnet|testnet|mainnet]/data
-# Step 5.   Update scripts/cardano-cli/[devnet|testnet|mainnet]/global-export-variables.sh
+# Step 4.   Copy deploy/* scripts/cardano-cli/[devnet|preview|preprod|mainnet]/data
+# Step 5.   Update scripts/cardano-cli/[devnet|preview|preprod|mainnet]/global-export-variables.sh
 #           with the UTXO to be used for admin collateral
 ##############################################################
 
@@ -27,7 +27,7 @@ set -x
 if [ -z $1 ]; 
 then
     echo "init-tx.sh:  Invalid script arguments"
-    echo "Usage: init-tx.sh [devnet|preview|mainnet]"
+    echo "Usage: init-tx.sh [devnet|preview|preprod|mainnet]"
     exit 1
 fi
 ENV=$1
@@ -55,8 +55,10 @@ rm -f $WORK-backup/*
 $CARDANO_CLI query protocol-parameters $network --out-file $WORK/pparms.json
 
 # load in local variable values
-nft_mint_script="$BASE/scripts/cardano-cli/$ENV/data/nft-minting-policy.plutus"
-nft_mint_script_addr=$($CARDANO_CLI address build --payment-script-file "$nft_mint_script" $network)
+validator_script="$BASE/scripts/cardano-cli/$ENV/data/earthtrust-validator.plutus"
+validator_script_addr=$($CARDANO_CLI address build --payment-script-file "$validator_script" $network)
+echo $validator_script_addr > $BASE/scripts/cardano-cli/$ENV/data/earthtrust-validator.addr
+admin_pkh=$(cat $ADMIN_PKH)
 
 echo "starting traceability init script"
 
@@ -64,8 +66,20 @@ echo "starting traceability init script"
 # Mint the threadtoken and attach it to the littercoin contract
 ################################################################
 
-admin_utxo_in=$ADMIN_UTXO
-admin_utxo_addr=$ADMIN_CHANGE_ADDR
+# Step 1: Get UTXOs from admin
+# There needs to be at least 2 utxos that can be consumed; one for spending of the token
+# and one uxto for collateral
+
+admin_utxo_addr=$($CARDANO_CLI address build $network --payment-verification-key-file "$ADMIN_VKEY")
+$CARDANO_CLI query utxo --address "$admin_utxo_addr" --cardano-mode $network --out-file $WORK/admin-utxo.json
+
+cat $WORK/admin-utxo.json | jq -r 'to_entries[] | select(.value.value.lovelace > '$COLLATERAL_ADA' ) | .key' > $WORK/admin-utxo-valid.json
+readarray admin_utxo_valid_array < $WORK/admin-utxo-valid.json
+admin_utxo_in=$(echo $admin_utxo_valid_array | tr -d '\n')
+
+cat $WORK/admin-utxo.json | jq -r 'to_entries[] | select(.value.value.lovelace == '$COLLATERAL_ADA' ) | .key' > $WORK/admin-utxo-collateral-valid.json
+readarray admin_utxo_valid_array < $WORK/admin-utxo-collateral-valid.json
+admin_utxo_collateral_in=$(echo $admin_utxo_valid_array | tr -d '\n')
 
 
 # Step 2: Build and submit the transaction
@@ -74,10 +88,10 @@ $CARDANO_CLI transaction build \
   --cardano-mode \
   $network \
   --change-address "$admin_utxo_addr" \
-  --tx-in-collateral "$ADMIN_COLLATERAL" \
+  --tx-in-collateral "$admin_utxo_collateral_in" \
   --tx-in "$admin_utxo_in" \
-  --tx-out "$nft_mint_script_addr+$MIN_ADA_OUTPUT_TX_REF" \
-  --tx-out-reference-script-file "$nft_mint_script" \
+  --tx-out "$validator_script_addr+$MIN_ADA_OUTPUT_TX_REF" \
+  --tx-out-reference-script-file "$validator_script" \
   --protocol-params-file "$WORK/pparms.json" \
   --out-file $WORK/init-tx-alonzo.body
 
@@ -94,3 +108,4 @@ echo "tx has been signed"
 
 echo "Submit the tx with plutus script and wait 5 seconds..."
 $CARDANO_CLI transaction submit --tx-file $WORK/init-tx-alonzo.tx $network
+
