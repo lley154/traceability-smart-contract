@@ -27,3 +27,6 @@ export VAL_REF_SCRIPT=85ac254e30cd8326742085b4bce562888423aa7ca81f7e37f490d3b24d
 export SPLIT=99
 export BLOCKFROST_API_KEY=preprodxg6GaNVZoHWUfQd7HQcgUg8epWhE1aMi
 export BLOCKFROST_API=https://cardano-preprod.blockfrost.io/api/v0
+export NEXT_PUBLIC_SHOP="https://test1-2803.myshopify.com/"            # Your test store URL
+export NEXT_PUBLIC_ACCESS_TOKEN="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"
+
