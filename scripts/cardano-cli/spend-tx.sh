@@ -28,9 +28,8 @@ else
     network="--testnet-magic $TESTNET_MAGIC"
 fi
 
-echo "Socket path: $CARDANO_NODE_SOCKET_PATH"
-
-ls -al "$CARDANO_NODE_SOCKET_PATH"
+# Print out timstamp
+date
 
 mkdir -p $WORK
 mkdir -p $WORK-backup

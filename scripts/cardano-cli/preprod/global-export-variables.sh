@@ -11,8 +11,7 @@ set -o pipefail
 export BASE=/home/lawrence/src/traceability-smart-contract
 export WORK=$BASE/work
 export CARDANO_CLI=/usr/local/bin/cardano-cli
-export BECH32=/usr/local/bin/bech32
-export CARDANO_NODE_SOCKET_PATH=/var/snap/docker/common/var-lib-docker/volumes/cardano-ipc/_data/node.socket
+export CARDANO_NODE_SOCKET_PATH=/home/lawrence/.cardano-preprod-node/db/node.socket
 export TESTNET_MAGIC=1
 export ADMIN_VKEY=/home/lawrence/.local/keys/testnet/admin/admin.vkey
 export ADMIN_SKEY=/home/lawrence/.local/keys/testnet/admin/admin.skey
