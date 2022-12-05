@@ -4,14 +4,12 @@
 # You must do these steps first before running this script
 ##############################################################
 #
-# Step 1.   Find the admin UTXO you will use
+# Step 1.   Confirm you have 2 UTXO at admin address (5 Ada for Collateral, and anything greater than 5 Ada)
 # Step 2.   Update src/Traceability/V2/Deploy.hs if there has been any 
 #           changes in the merchant and donor wallets, if the 
 #           split has changed and any version number changes.
 # Step 3.   nix-shell, cabal repl, main
 # Step 4.   Copy deploy/* scripts/cardano-cli/[devnet|preview|preprod|mainnet]/data
-# Step 5.   Update scripts/cardano-cli/[devnet|preview|preprod|mainnet]/global-export-variables.sh
-#           with the UTXO to be used for admin collateral
 ##############################################################
 
 
@@ -61,10 +59,6 @@ echo $validator_script_addr > $BASE/scripts/cardano-cli/$ENV/data/earthtrust-val
 admin_pkh=$(cat $ADMIN_PKH)
 
 echo "starting traceability init script"
-
-################################################################
-# Mint the threadtoken and attach it to the littercoin contract
-################################################################
 
 # Step 1: Get UTXOs from admin
 # There needs to be at least 2 utxos that can be consumed; one for spending of the token
