@@ -67,7 +67,7 @@ echo "starting traceability init script"
 admin_utxo_addr=$($CARDANO_CLI address build $network --payment-verification-key-file "$ADMIN_VKEY")
 $CARDANO_CLI query utxo --address "$admin_utxo_addr" --cardano-mode $network --out-file $WORK/admin-utxo.json
 
-cat $WORK/admin-utxo.json | jq -r 'to_entries[] | select(.value.value.lovelace > '$COLLATERAL_ADA' ) | .key' > $WORK/admin-utxo-valid.json
+cat $WORK/admin-utxo.json | jq -r 'to_entries[] | select(.value.value.lovelace > '$MIN_REF_ADA' ) | .key' > $WORK/admin-utxo-valid.json
 readarray admin_utxo_valid_array < $WORK/admin-utxo-valid.json
 admin_utxo_in=$(echo $admin_utxo_valid_array | tr -d '\n')
 
