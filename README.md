@@ -29,6 +29,35 @@ Below is a simplified view of the components deployed as part of the traceabilit
 
 ## Setting up to re-build the plutus scripts
 
+Clone the repo using the following command
+```
+git clone https://github.com/lley154/traceability-smart-contract.git
+cd traceability-smart-contract/
+```
+
+
+## Deploying the smart contract
+### Update Deploy.hs
+Update the correct pkh values for the wallets in src/V2/Traceability/Deploy.hs
+```
+-- Merchant Pkh
+merchantPubKeyHashBS :: B.ByteString
+merchantPubKeyHashBS = "a8376ad675ab3c86f945fd1f7c5773888269dced9b9368c7d7a113efd4495d6cb7a846ec2be6a23fe1991ef3c507cab3cdaba326d5263cf5"
+
+-- Donor public key payment hash
+donorPubKeyHashBS :: B.ByteString
+donorPubKeyHashBS = "f485f3526ffd1569f3ace37e89317380297ec15dc09549356db1cd04"
+
+-- Admin public key payment hash
+adminPubKeyHashBS :: B.ByteString
+adminPubKeyHashBS = "c06bfbb7bb62004d21754f75a84249ad5527a585d576f70225e564c1"
+
+-- Refund public key payment hash
+refundPubKeyHashBS :: B.ByteString
+refundPubKeyHashBS = "4d4e81a25ca2bac69a0d0f8990a2030ec72110e56001f4981f5713d2"
+```
+
+
 ### Cabal+Nix build
 
 Use the Cabal+Nix build if you want to develop with incremental builds, but also have it automatically download all dependencies.
@@ -38,7 +67,7 @@ Set up your machine to build things with `Nix`, following the [Plutus README](ht
 To enter a development environment, simply open a terminal on the project's root and use `nix-shell` to get a bash shell:
 
 ```
-$ nix-shell
+nix-shell
 ```
 
 and you'll have a working development environment for now and the future whenever you enter this directory.
@@ -47,8 +76,6 @@ The build should not take too long if you correctly set up the binary cache. If 
 
 Afterwards, the command `cabal build` from the terminal should work (if `cabal` couldn't resolve the dependencies, run `cabal update` and then `cabal build`).
 
-Also included in the environment is a working [Haskell Language Server](https://github.com/haskell/haskell-language-server) you can integrate with your editor.
-See [here](https://github.com/haskell/haskell-language-server#configuring-your-editor) for instructions.
 
 ### Run cabal repl to generate the plutus scripts
 
@@ -80,4 +107,47 @@ The new plutus scripts will be created in the traceability-smart-contract/deploy
 -rw-rw-r-- 1 lawrence lawrence   29 Nov 15 09:21 deploy/redeemer-earthtrust-spend.json
 
 ```
+
+1) Copy the resultant files to the data directory for your respective environment
+
+```
+[nix-shell:~/src/traceability-smart-contract]$ cp deploy/* scripts/preprod/data
+```
+2) Then run the init-tx.sh to load the smart contract onto the blockchain
+cd scripts/cardano-cli/
+./init-tx.sh preprod
+
+3) Copy the address of the validator from the script output
+
+4) Update the .bashrc file with the validator script address
+```
+export NEXT_PUBLIC_EARTHTRUST_VAL_ADDR="addr_test1wpv8838yxz5yu58jq50qh86sh34my4m3df7frn7xhj2ltnsgnv855"
+```
+
+5) Query the address to find the UTXO of the validator script
+```
+lawrence@lawrence-iMac:~$ cardano-cli query utxo --address addr_test1wpv8838yxz5yu58jq50qh86sh34my4m3df7frn7xhj2ltnsgnv855 --cardano-mode --testnet-magic 1
+                           TxHash                                 TxIx        Amount
+--------------------------------------------------------------------------------------
+50d7cd3ed45beb91d9f58593ca988b7cdaa199ab860d50bd26fa598366c9aacc     1        20000000 lovelace + TxOutDatumNone
+```
+
+6) Update preprod/global-export-varaibles.sh with the correct validator refefence UTXO
+```
+export VAL_REF_SCRIPT=50d7cd3ed45beb91d9f58593ca988b7cdaa199ab860d50bd26fa598366c9aacc#1
+```
+
+Once funds have been locked at the smart contract address, spend-tx.sh or refund-tx.sh shell scripts can be run to split the order amount to the merchant and donor respectively.
+
+
+
+
+
+
+
+
+
+
+
+
 
