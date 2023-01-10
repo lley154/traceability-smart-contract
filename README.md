@@ -21,10 +21,11 @@ The following Ada payment flow shows both the spend and refund smart contract ex
 
 
 ## System Implementation
-Below is a simplified view of the components deployed as part of the traceability smart contract launch
+Below is a simplified view of the components deployed as part of the traceability smart contract launch.  
 
 ![System Component View](/images/system-components.png)
 
+Click here for more details on the [Shopify Pay With Ada Integration](https://github.com/lley154/payment-poc)
 
 
 ## Setting up to re-build the plutus scripts
