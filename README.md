@@ -119,6 +119,14 @@ cd scripts/cardano-cli/
 
 3) Copy the address of the validator from the script output
 
+```
+...
+/usr/local/bin/cardano-cli transaction build --babbage-era --cardano-mode --testnet-magic 1 --change-address addr_test1vzu6hnmgvageu2qyypy25yfqwg222tndt5eg3d6j68p8dqspgdxn7 --tx-in-collateral 0b90e315e1829bf4a9225de6a7fc238f33c12dca1c34ce2a9faa24eb8e56ab29#0 --tx-in fa51bf0804a8dcf1c0fceef354912a4308021584545fffb2bcc46d333529d1a9#0 --tx-out addr_test1wpv8838yxz5yu58jq50qh86sh34my4m3df7frn7xhj2ltnsgnv855+20000000 --tx-out-reference-script-file /home/lawrence/src/traceability-smart-contract/scripts/cardano-cli/preprod/data/earthtrust-validator.plutus --protocol-params-file /home/lawrence/src/traceability-smart-contract/work/pparms.json --out-file /home/lawrence/src/traceability-smart-contract/work/init-tx-alonzo.body
+ submit --tx-file /home/lawrence/src/traceability-smart-contract/work/init-tx-alonzo.tx --testnet-magic 1
+Transaction successfully submitted.
+...
+```
+
 4) Update the .bashrc file with the validator script address
 ```
 export NEXT_PUBLIC_EARTHTRUST_VAL_ADDR="addr_test1wpv8838yxz5yu58jq50qh86sh34my4m3df7frn7xhj2ltnsgnv855"
