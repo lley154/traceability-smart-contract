@@ -145,7 +145,9 @@ lawrence@lawrence-iMac:~$ cardano-cli query utxo --address addr_test1wpv8838yxz5
 export VAL_REF_SCRIPT=50d7cd3ed45beb91d9f58593ca988b7cdaa199ab860d50bd26fa598366c9aacc#1
 ```
 
-Once funds have been locked at the smart contract address, the spend-tx.sh shell script can be run to split the order amount to the merchant and donor respectively.  Be sure that your source your ~/.bashrc so you have the correct NEXT_PUBLIC_SHOP and NEXT_PUBLIC_ACCESS_TOKEN variables correct.   The refund-tx.sh script is used if there was an error processing the order locked at the script address.  (eg invalid donor wallet address).
+Once funds have been locked at the smart contract address, the spend-tx.sh shell script can be run to split the order amount to the merchant and donor respectively.  Be sure that your source your ~/.bashrc so you have the correct NEXT_PUBLIC_SHOP and NEXT_PUBLIC_ACCESS_TOKEN variables correct.   
+
+The refund-tx.sh script is used if there was an error processing the order locked at the script address.  (eg invalid donor wallet address).
 
 
 
